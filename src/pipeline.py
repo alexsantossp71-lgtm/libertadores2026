@@ -49,13 +49,15 @@ class LibertadoresPipeline:
         grupos_features, oitavas, quartas = self.preprocessor.run()
         print()
         
-        # Etapa 3: Treinamento do modelo
+        # Etapa 3: Ajuste do modelo de Poisson
         if not skip_training:
-            print("[3/4] 🤖 Treinando modelo...")
-            self.model.run()
+            print("[3/4] 📐 Ajustando modelo de Poisson...")
+            self.model.fit_poisson(grupos_features)
+            print(f"   • Times analisados: {len(self.model.poisson.teams)}")
+            print(f"   • Média de gols/jogo (liga): {self.model.poisson.league_avg:.2f}")
             print()
         else:
-            print("[3/4] ⏭️  Pulando treinamento...\n")
+            print("[3/4] ⏭️  Pulando ajuste do modelo...\n")
         
         # Etapa 4: Geração de previsões
         print("[4/4] 🔮 Gerando previsões...")
