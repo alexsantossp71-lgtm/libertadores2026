@@ -21,29 +21,19 @@ class LibertadoresPredictor:
         self.preprocessor = Preprocessor()
         self.model = LibertadoresModel()
     
-    def load_or_train_model(self):
-        """Carrega modelo existente ou treina novo."""
-        model_path = Path(__file__).parent.parent / "models" / "classifier.pkl"
-        
-        if model_path.exists():
-            print("Carregando modelo existente...")
-            self.model.load_model()
-        else:
-            print("Treinando novo modelo...")
-            self.model.run()
-    
     def generate_quartas_predictions(self) -> pd.DataFrame:
-        """Gera previsões para as quartas de final."""
+        """Gera previsões para as quartas de final usando o modelo de Poisson."""
         print("=" * 50)
         print("Gerando Previsões - Quartas de Final")
         print("=" * 50)
         
-        # Carrega modelo
-        self.load_or_train_model()
-        
         # Carrega dados
         grupos, _, quartas = self.preprocessor.load_data()
         grupos_features = self.preprocessor.create_features(grupos)
+        
+        # Ajusta o modelo de Poisson com os dados da fase de grupos
+        print("Ajustando modelo de Poisson com os dados da fase de grupos...")
+        self.model.fit_poisson(grupos_features)
         
         # Gera features para cada confronto
         confrontos = []
@@ -58,7 +48,7 @@ class LibertadoresPredictor:
             )
             
             # Faz previsão
-            result_probs = self.model.predict_match(match_features)
+            result_probs = self.model.predict_match_poisson(match_features)
             score = self.model.predict_score(match_features)
             
             confrontos.append({
@@ -72,6 +62,8 @@ class LibertadoresPredictor:
                 'Prob_Mandante': result_probs['prob_vitoria_mandante'],
                 'Prob_Empate': result_probs['prob_empate'],
                 'Prob_Visitante': result_probs['prob_derrota_mandante'],
+                'Gols_Esperados_Mandante': result_probs['gols_esperados_mandante'],
+                'Gols_Esperados_Visitante': result_probs['gols_esperados_visitante'],
                 'Placar_Previsto': f"{score[0]}x{score[1]}",
                 'Favorito': result_probs['resultado_previsto']
             })
@@ -104,6 +96,9 @@ class LibertadoresPredictor:
             print(f"      {row['Mandante']}: {row['Prob_Mandante']:.1%}")
             print(f"      Empate: {row['Prob_Empate']:.1%}")
             print(f"      {row['Visitante']}: {row['Prob_Visitante']:.1%}")
+            print(f"   🥅 Gols esperados (Poisson): "
+                  f"{row['Gols_Esperados_Mandante']:.2f} x "
+                  f"{row['Gols_Esperados_Visitante']:.2f}")
             print(f"   🔮 Placar Previsto: {row['Placar_Previsto']}")
             print(f"   ⭐ Favorito: {row['Favorito']}")
         

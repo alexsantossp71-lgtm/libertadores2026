@@ -15,19 +15,28 @@ from sklearn.metrics import accuracy_score, classification_report, confusion_mat
 from sklearn.linear_model import LogisticRegression
 import xgboost as xgb
 
+from poisson import PoissonScoreModel
+
 # Configurações
 MODEL_DIR = Path(__file__).parent.parent / "models"
 MODEL_DIR.mkdir(parents=True, exist_ok=True)
 
 
 class LibertadoresModel:
-    """Modelo preditivo para resultados da Libertadores."""
+    """Modelo preditivo para resultados da Libertadores.
+
+    Combina duas abordagens:
+      * Classificador XGBoost (1X2) treinado sobre features de confronto;
+      * Modelo de Regressão de Poisson para previsão de placares e
+        probabilidades 1X2 a partir de gols esperados (ver ``poisson.py``).
+    """
     
     def __init__(self):
         self.classifier = None
         self.scaler = StandardScaler()
         self.feature_names = []
         self.is_trained = False
+        self.poisson = PoissonScoreModel()
     
     def prepare_training_data(self) -> Tuple[np.ndarray, np.ndarray]:
         """
@@ -153,29 +162,86 @@ class LibertadoresModel:
         
         return results
     
+    def fit_poisson(self, grupos_df: pd.DataFrame) -> PoissonScoreModel:
+        """Ajusta o modelo de Poisson com os dados da fase de grupos.
+
+        Parameters
+        ----------
+        grupos_df : pd.DataFrame
+            Tabela agregada da fase de grupos (colunas ``Time``, ``J``, ``GP``,
+            ``GC``), tipicamente retornada por ``Preprocessor.create_features``.
+
+        Returns
+        -------
+        PoissonScoreModel
+            O modelo de Poisson ajustado.
+        """
+        self.poisson.fit(grupos_df)
+        return self.poisson
+
+    def predict_match_poisson(
+        self, match_features: pd.DataFrame
+    ) -> Dict[str, float]:
+        """Prevê probabilidades 1X2 e placar usando o modelo de Poisson.
+
+        Requer que ``fit_poisson`` tenha sido chamado previamente.
+        """
+        if not self.poisson.is_fitted:
+            raise RuntimeError(
+                "Modelo de Poisson não ajustado. "
+                "Execute fit_poisson(grupos_df) primeiro."
+            )
+
+        home = match_features["Time_Mandante"].values[0]
+        away = match_features["Time_Visitante"].values[0]
+
+        probs = self.poisson.match_probabilities(home, away)
+
+        classes = ["Visitante", "Empate", "Mandante"]
+        idx = int(np.argmax([probs["p_away"], probs["p_draw"], probs["p_home"]]))
+
+        return {
+            "prob_derrota_mandante": probs["p_away"],
+            "prob_empate": probs["p_draw"],
+            "prob_vitoria_mandante": probs["p_home"],
+            "resultado_previsto": classes[idx],
+            "gols_esperados_mandante": probs["expected_goals_home"],
+            "gols_esperados_visitante": probs["expected_goals_away"],
+            "placar_mais_provavel": probs["most_likely_score"],
+        }
+
     def predict_score(self, match_features: pd.DataFrame) -> Tuple[int, int]:
+        """Prevê o placar a partir dos gols esperados do modelo de Poisson.
+
+        O placar é o arredondamento dos gols esperados (``round(lambda)``) de
+        cada time. Requer que ``fit_poisson`` tenha sido chamado previamente.
         """
-        Prevê placar usando modelo simplificado.
-        Em produção, usaria Regressão de Poisson.
-        """
-        # Médias históricas de gols
-        media_gols_mandante = 1.5
-        media_gols_visitante = 1.1
-        
-        # Ajusta baseado em features
-        diff_forca = match_features['Diff_Score_Forca'].values[0] / 100
-        
-        gols_mandante = max(0, int(round(media_gols_mandante + diff_forca * 0.5)))
-        gols_visitante = max(0, int(round(media_gols_visitante - diff_forca * 0.3)))
-        
-        return int(gols_mandante), int(gols_visitante)
+        if not self.poisson.is_fitted:
+            raise RuntimeError(
+                "Modelo de Poisson não ajustado. "
+                "Execute fit_poisson(grupos_df) primeiro."
+            )
+
+        home = match_features["Time_Mandante"].values[0]
+        away = match_features["Time_Visitante"].values[0]
+
+        lam_home, lam_away = self.poisson.expected_goals(home, away)
+
+        gols_mandante = int(round(lam_home))
+        gols_visitante = int(round(lam_away))
+
+        return gols_mandante, gols_visitante
     
     def predict_quartas(self, quartas_features: List[pd.DataFrame]) -> pd.DataFrame:
-        """Prevê resultados de todos os confrontos das quartas."""
+        """Prevê resultados de todos os confrontos das quartas.
+
+        Utiliza o modelo de Poisson para probabilidades 1X2 e placar.
+        Requer que ``fit_poisson`` tenha sido chamado previamente.
+        """
         predictions = []
         
         for i, features in enumerate(quartas_features):
-            result_probs = self.predict_match(features)
+            result_probs = self.predict_match_poisson(features)
             score = self.predict_score(features)
             
             predictions.append({

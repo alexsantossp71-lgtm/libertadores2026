@@ -91,8 +91,34 @@ Com base nos dados da fase de grupos e oitavas, já podemos extrair insights imp
 | Tarefa | Modelo | Bibliotecas |
 |--------|--------|-------------|
 | Prever resultado (V/E/D) | **XGBoost Classifier** | `xgboost`, `sklearn` |
-| Prever placar exato | **Regressão de Poisson** | `statsmodels`, `scipy` |
+| Prever placar exato e probabilidades 1X2 | **Regressão de Poisson** | `scipy` |
 | Avaliar importância das features | **Feature Importance** | `matplotlib`, `seaborn` |
+
+### Modelo de Regressão de Poisson (Placares)
+
+O placar de uma partida é modelado assumindo que o número de gols de cada time
+segue uma **distribuição de Poisson** cuja taxa depende da força de ataque do
+time e da fragilidade defensiva do adversário, ajustada pelo mando de campo:
+
+```
+lambda_casa = ataque_casa * defesa_fora * vantagem_casa / media_liga
+lambda_fora = ataque_fora * defesa_casa * fator_fora     / media_liga
+```
+
+Onde:
+
+- `ataque_i` = gols marcados por jogo do time `i` (`GP / J`);
+- `defesa_j` = gols sofridos por jogo do time `j` (`GC / J`);
+- `media_liga` = média de gols por jogo da competição;
+- `vantagem_casa` (1.15) e `fator_fora` (0.85) modelam o efeito de jogar em casa.
+
+Com os lambdas estimados, a probabilidade de cada placar `(i x j)` é o produto
+das probabilidades marginais (`Poisson(i; lambda_casa) * Poisson(j; lambda_fora)`),
+e a partir da matriz de placares derivam-se as probabilidades 1X2 e o placar mais
+provável. A implementação está em [`src/poisson.py`](src/poisson.py).
+
+> Referências conceituais: Maher (1982) e Dixon & Coles (1997), na forma
+> multiplicativa simplificada aplicável a estatísticas agregadas da fase de grupos.
 
 ### Métricas de Avaliação
 - **Acurácia** e **Matriz de Confusão** para classificação.
@@ -107,10 +133,10 @@ Com base nos dados atuais e na análise estatística preliminar, as probabilidad
 
 | Jogo | Mandante | Visitante | Prob. Mandante | Prob. Empate | Prob. Visitante | Placar Mais Provável |
 |------|----------|-----------|----------------|--------------|-----------------|----------------------|
-| QF1 | **Estudiantes** (ARG) | **Corinthians** (BRA) | 32% | 38% | 30% | 1x1 |
-| QF2 | **Independiente del Valle** (ECU) | **Flamengo** (BRA) | 22% | 25% | **53%** | 0x2 |
-| QF3 | **Palmeiras** (BRA) | **LDU** (ECU) | **55%** | 28% | 17% | 2x0 |
-| QF4 | **Fluminense** (BRA) | **Platense** (ARG) | 48% | 30% | 22% | 2x1 |
+| QF1 | **Estudiantes** (ARG) | **Corinthians** (BRA) | 28% | 40% | 32% | 1x1 |
+| QF2 | **Independiente del Valle** (ECU) | **Flamengo** (BRA) | 9% | 34% | **57%** | 0x1 |
+| QF3 | **Palmeiras** (BRA) | **LDU** (ECU) | **54%** | 30% | 16% | 1x1 |
+| QF4 | **Fluminense** (BRA) | **Platense** (ARG) | **55%** | 30% | 15% | 1x0 |
 
 > ⚠️ **Observação**: Estas previsões são baseadas em dados estatísticos e não consideram fatores imprevistos como lesões, suspensões ou mudanças táticas de última hora. O modelo será atualizado conforme novos dados forem disponibilizados.
 
@@ -159,6 +185,12 @@ Com base nos dados atuais e na análise estatística preliminar, as probabilidad
    ```
    Abra `01_eda_libertadores.ipynb` para ver a análise exploratória detalhada.
 
+6. **Execute os testes** (opcional)
+   ```bash
+   python -m pytest tests/ -v
+   ```
+   Valida o modelo de Poisson, a engenharia de features e a integração do pipeline.
+
 ---
 
 ## 📁 Estrutura do Repositório
@@ -175,8 +207,14 @@ libertadores2026/
 ├── src/
 │   ├── scraper.py         # Coleta de dados (Web Scraping/API)
 │   ├── preprocessing.py   # Limpeza e transformação
+│   ├── poisson.py         # Modelo de Poisson (placares e probabilidades 1X2)
 │   ├── model.py           # Treino e avaliação dos modelos
+│   ├── pipeline.py        # Orquestração do fluxo completo
 │   └── predict.py         # Geração de previsões
+├── tests/
+│   ├── test_poisson.py        # Testes do modelo de Poisson
+│   ├── test_preprocessing.py  # Testes da engenharia de features
+│   └── test_model.py          # Testes de integração
 ├── models/
 │   └── classifier.pkl     # Modelo treinado (salvo)
 ├── outputs/
