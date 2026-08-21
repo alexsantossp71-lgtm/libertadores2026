@@ -3,6 +3,7 @@
 [![Python](https://img.shields.io/badge/Python-3.9%2B-blue)](https://python.org)
 [![Pandas](https://img.shields.io/badge/Pandas-2.0%2B-orange)](https://pandas.pydata.org/)
 [![Scikit-learn](https://img.shields.io/badge/Scikit--learn-1.2%2B-yellow)](https://scikit-learn.org/)
+[![Streamlit](https://img.shields.io/badge/Streamlit-Dashboard-ff4b4b)](app.py)
 [![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
 
 ---
@@ -179,13 +180,32 @@ Com base nos dados atuais e na análise estatística preliminar, as probabilidad
    - Gerar as previsões para as quartas
    - Salvar os resultados em `outputs/`
 
-5. **Explore os notebooks**
+5. **Abra o dashboard interativo (Streamlit)**
+   ```bash
+   streamlit run app.py
+   ```
+   O app abre em `http://localhost:8501` e oferece:
+   - 📊 **Visão geral**: tabela da fase de grupos e gráfico Ataque × Defesa;
+   - 🔮 **Quartas de final**: probabilidades 1X2, gols esperados e placar mais
+     provável de cada confronto, com exportação em CSV;
+   - ⚔️ **Simulador**: escolha qualquer mandante × visitante e veja a matriz de
+     placares, placares mais prováveis e mercados derivados (over/under,
+     ambos marcam, clean sheet);
+   - 🎲 **Monte Carlo**: simulação do mata-mata (quartas → título) com jogos de
+     ida e volta e disputa de pênaltis;
+   - ⚙️ **Parâmetros ao vivo**: vantagem de mando de campo e truncamento da
+     Poisson ajustáveis na barra lateral.
+
+   > Se os CSVs de `data/raw/` não existirem, o app executa o scraper
+   > automaticamente para gerar a base de exemplo.
+
+6. **Explore os notebooks**
    ```bash
    jupyter notebook notebooks/
    ```
    Abra `01_eda_libertadores.ipynb` para ver a análise exploratória detalhada.
 
-6. **Execute os testes** (opcional)
+7. **Execute os testes** (opcional)
    ```bash
    python -m pytest tests/ -v
    ```
@@ -197,6 +217,9 @@ Com base nos dados atuais e na análise estatística preliminar, as probabilidad
 
 ```
 libertadores2026/
+├── app.py                 # 🖥️ Dashboard interativo (Streamlit)
+├── .streamlit/
+│   └── config.toml        # Tema e configuração do dashboard
 ├── data/
 │   ├── raw/               # Dados brutos (CSVs)
 │   ├── processed/         # Dados limpos e com features
@@ -229,7 +252,7 @@ libertadores2026/
 
 ## 🚀 Próximos Passos (Melhorias Futuras)
 
-- [ ] **Dashboard Interativo**: Criar um aplicativo com **Streamlit** para visualizar previsões em tempo real.
+- [x] **Dashboard Interativo**: aplicativo **Streamlit** (`app.py`) com previsões, simulador de confrontos e Monte Carlo do mata-mata.
 - [ ] **Dados de Odds**: Incluir odds de casas de apostas como variável externa (feature).
 - [ ] **Automação**: Agendar a execução diária para atualizar dados e previsões.
 - [ ] **Mais Features**: Adicionar estatísticas de jogadores (gols, assistências, cartões).
