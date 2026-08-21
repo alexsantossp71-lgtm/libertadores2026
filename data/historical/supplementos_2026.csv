@@ -1,0 +1,17 @@
+acao,data,fase,rodada,mandante,pais_mandante,visitante,pais_visitante,gols_mandante,gols_visitante,penaltis_mandante,penaltis_visitante,prorrogacao,fonte
+score,2026-08-11,Playoffs,Round of 16,Fluminense FC,BRA,CS Independiente Rivadavia,ARG,0,0,,,False,espn
+score,2026-08-11,Playoffs,Round of 16,Estudiantes de La Plata,ARG,CD Universidad Católica,CHI,1,1,,,False,espn
+score,2026-08-12,Playoffs,Round of 16,SE Palmeiras,BRA,Club Cerro Porteño,PAR,1,1,,,False,espn
+score,2026-08-12,Playoffs,Round of 16,CA Platense,ARG,CD Coquimbo Unido,CHI,1,1,,,False,espn
+score,2026-08-12,Playoffs,Round of 16,Cruzeiro EC,BRA,CR Flamengo,BRA,1,1,,,False,espn
+score,2026-08-13,Playoffs,Round of 16,Mirassol FC,BRA,LDU de Quito,ECU,1,1,,,False,espn
+score,2026-08-13,Playoffs,Round of 16,CA Rosario Central,ARG,SC Corinthians Paulista,BRA,0,0,,,False,espn
+substituir,2026-08-18,Playoffs,Round of 16,CD Tolima,COL,CAR Independiente del Valle,ECU,0,1,,,False,fbref
+substituir,2026-08-25,Playoffs,Round of 16,CAR Independiente del Valle,ECU,CD Tolima,COL,,,,,False,fbref
+score,2026-08-18,Playoffs,Round of 16,CS Independiente Rivadavia,ARG,Fluminense FC,BRA,1,1,4,5,True,fbref
+score,2026-08-18,Playoffs,Round of 16,CD Universidad Católica,CHI,Estudiantes de La Plata,ARG,0,3,,,False,fbref
+score,2026-08-19,Playoffs,Round of 16,Club Cerro Porteño,PAR,SE Palmeiras,BRA,0,1,,,False,fbref
+score,2026-08-19,Playoffs,Round of 16,CD Coquimbo Unido,CHI,CA Platense,ARG,0,0,6,7,True,fbref
+score,2026-08-19,Playoffs,Round of 16,CR Flamengo,BRA,Cruzeiro EC,BRA,2,1,,,False,fbref
+score,2026-08-20,Playoffs,Round of 16,LDU de Quito,ECU,Mirassol FC,BRA,0,0,5,4,True,fbref
+score,2026-08-20,Playoffs,Round of 16,SC Corinthians Paulista,BRA,CA Rosario Central,ARG,1,0,,,False,fbref

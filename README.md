@@ -4,7 +4,6 @@
 [![Pandas](https://img.shields.io/badge/Pandas-2.0%2B-orange)](https://pandas.pydata.org/)
 [![Scikit-learn](https://img.shields.io/badge/Scikit--learn-1.2%2B-yellow)](https://scikit-learn.org/)
 [![Streamlit](https://img.shields.io/badge/Streamlit-Dashboard-ff4b4b)](app.py)
-[![Atualização diária](https://img.shields.io/badge/CI-Atualiza%C3%A7%C3%A3o%20di%C3%A1ria-12a05c)](.github/workflows/update_data.yml)
 [![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
 
 ---
@@ -24,22 +23,41 @@ O projeto foi desenvolvido como parte do meu portfólio para demonstrar habilida
 
 ## 📊 Dados Utilizados
 
-### Fonte dos Dados
-Os dados foram coletados de fontes públicas confiáveis, incluindo:
-- [SofaScore](https://www.sofascore.com/) – Estatísticas de jogos
-- [Flashscore](https://www.flashscore.com.br/) – Resultados e tabelas
-- [Bzzoiro Sports Data](https://sports.bzzoiro.com/) – **Odds 1X2** (consenso multi-bookmaker)
-- [API Futebol](https://www.api-futebol.com.br/) – **Estatísticas detalhadas** (faltas, cartões, posse, passes, finalizações) e **arbitragem**
-- [Football-Data.org](https://www.football-data.org/) – API para dados históricos (em desenvolvimento)
+### Fonte dos Dados (100% reais — nenhum dado simulado)
 
-### Dados Atuais (Libertadores 2026)
-- **Fase de Grupos**: Tabela completa com pontos, gols, saldo, etc.
-- **Oitavas de Final**: Resultados de ida e volta, classificados.
-- **Quartas de Final**: Confrontos definidos (datas: 09/09 e 16/09).
-- **Estatísticas detalhadas**: 48 partidas com faltas, cartões, posse, passes,
-  finalizações, escanteios, impedimentos, defesas e árbitro responsável.
-- **Odds 1X2**: odds decimais (consenso multi-bookmaker) e probabilidades
-  implícitas para cada partida.
+- [openfootball/south-america](https://github.com/openfootball/south-america) (domínio público) —
+  **todas as partidas da Copa Libertadores 2012–2026** (classificatórias, fase de grupos e
+  mata-mata), versionadas em `data/historical/openfootball/`
+- [ESPN](https://site.api.espn.com/apis/site/v2/sports/soccer/conmebol.libertadores/scoreboard) —
+  placares recentes (playoffs de agosto/2026) e conferência cruzada
+- [FBref](https://fbref.com/en/comps/14/schedule/Copa-Libertadores-Scores-and-Fixtures) —
+  mata-mata 2026 e confrontos das quartas (evidência em `data/historical/fbref_mata_mata_2026.md`)
+- [Bzzoiro Sports Data](https://sports.bzzoiro.com/) – **Odds 1X2** (consenso multi-bookmaker; requer chave)
+- [API Futebol](https://www.api-futebol.com.br/) – **Estatísticas detalhadas** (faltas, cartões, posse, passes, finalizações) e **arbitragem** (requer chave)
+
+O dataset consolidado é **`data/historical/partidas_libertadores.csv`** (2.227 partidas,
+2.226 com placar, 15 edições), reconstruído com validação de integridade
+(`sum(GP) == sum(GC)` por tabela, duplicatas, pernas dos confrontos)::
+
+    python src/real_data.py build      # reconstrói e valida o dataset
+    python src/real_data.py tabelas    # gera data/raw/*.csv do dashboard
+    python src/real_data.py validate   # roda só a validação
+
+**Sem chaves de API, nenhuma base sintética é usada**: as páginas de arbitragem/odds
+exigem `API_FUTEBOL_KEY`/`BSD_API` (ou `ALLOW_EXAMPLE_DATA=1` explícito, só para desenvolvimento).
+
+### Dados Atuais (Libertadores 2026 — reais, atualizados em 21/08/2026)
+- **Fase de Grupos**: 32 times, 8 grupos (A–H), tabela **derivada das partidas**
+  (consistência `GP == GC` garantida por construção).
+- **Oitavas de Final (Round of 16)**: ida e volta completas — classificados:
+  Fluminense (pên. 5–4), Estudiantes (4–1), Platense (pên. 7–6), Palmeiras (2–1),
+  Flamengo (3–2), LDU (pên. 5–4) e Corinthians (1–0); Tolima × Independiente del Valle
+  decide a última vaga em 25/08 (ida remarcada: 0–1).
+- **Quartas de Final (reais, ida em 09/09 e volta em 16/09)**:
+  Fluminense × Platense · Estudiantes × Corinthians · Palmeiras × LDU ·
+  Flamengo × (Tolima ou IDV).
+- **Histórico completo**: edições 2012–2025 com todos os mata-matas
+  (campeões conferidos contra a realidade: 2019 Flamengo, 2020 Palmeiras, 2021 Palmeiras, 2022 Flamengo…).
 
 ### Estrutura dos Dados
 ```
@@ -277,10 +295,16 @@ Com base nos dados atuais e na análise estatística preliminar, as probabilidad
 
 | Jogo | Mandante | Visitante | Prob. Mandante | Prob. Empate | Prob. Visitante | Placar Mais Provável |
 |------|----------|-----------|----------------|--------------|-----------------|----------------------|
-| QF1 | **Estudiantes** (ARG) | **Corinthians** (BRA) | 28% | 40% | 32% | 1x1 |
-| QF2 | **Independiente del Valle** (ECU) | **Flamengo** (BRA) | 9% | 34% | **57%** | 0x1 |
-| QF3 | **Palmeiras** (BRA) | **LDU** (ECU) | **54%** | 30% | 16% | 1x1 |
-| QF4 | **Fluminense** (BRA) | **Platense** (ARG) | **55%** | 30% | 15% | 1x0 |
+| QF | Mandante | Visitante | P(mandante) | P(empate) | P(visitante) | Placar provável |
+|----|----------|-----------|-------------|-----------|--------------|-----------------|
+| QF1 | Fluminense (BRA) | Platense (ARG) | **41%** | 27% | 32% | 1x1 |
+| QF2 | Estudiantes (ARG) | Corinthians (BRA) | 27% | 37% | **36%** | 0x0 |
+| QF3 | Palmeiras (BRA) | LDU (ECU) | **50%** | 28% | 22% | 1x0 |
+| QF4 | Flamengo (BRA) | Tolima ou IDV | — | — | — | a definir (volta em 25/08) |
+
+*Previsões do modelo de Poisson ajustado aos dados reais da fase de grupos 2026
+(32 times; média real de 1,17 gols/time/jogo). QF4 aguarda o vencedor de
+Tolima × Independiente del Valle (25/08).*
 
 > ⚠️ **Observação**: Estas previsões são baseadas em dados estatísticos e não consideram fatores imprevistos como lesões, suspensões ou mudanças táticas de última hora. O modelo será atualizado conforme novos dados forem disponibilizados.
 
@@ -406,7 +430,8 @@ libertadores2026/
 │   ├── 02_feature_engineering.ipynb       # Criação de features
 │   └── 05_analise_arbitragem_odds.ipynb   # Arbitragem e odds (executado)
 ├── src/
-│   ├── scraper.py             # Coleta de dados (Web Scraping)
+│   ├── real_data.py           # ★ Dados reais 2012–2026 (parser openfootball + suplementos)
+│   ├── scraper.py             # Materializa as tabelas do dashboard (dados reais)
 │   ├── api_futebol_client.py  # Cliente da API Futebol (estatísticas/arbitragem)
 │   ├── odds_client.py         # Cliente de odds da Bzzoiro Sports Data
 │   ├── generate_example_data.py  # Gerador determinístico das bases de exemplo
@@ -423,11 +448,10 @@ libertadores2026/
 │   ├── test_api_futebol_client.py # Testes do cliente da API Futebol
 │   ├── test_odds_client.py        # Testes do cliente de odds
 │   └── test_generate_example_data.py  # Testes do gerador de exemplo
-├── models/
-│   └── classifier.pkl     # Modelo treinado (salvo)
+├── models/                # Modelos treinados (gitignored, gerados localmente)
 ├── outputs/
-│   ├── quartas_previsao.csv   # Tabela com probabilidades
-│   └── charts/                # Gráficos gerados
+│   ├── charts/                # Gráficos gerados
+│   └── quartas_previsao.csv   # Gerado por src/predict.py (gitignored)
 ├── .env.example          # Modelo de variáveis de ambiente (BSD_API, API_FUTEBOL_KEY)
 ├── requirements.txt       # Dependências do projeto
 ├── .gitignore
@@ -441,7 +465,7 @@ libertadores2026/
 - [x] **Dashboard Interativo**: aplicativo **Streamlit** (`app.py`) com previsões, simulador de confrontos e Monte Carlo do mata-mata.
 - [x] **Dados de Odds**: odds 1X2 da **Bzzoiro Sports Data** com probabilidades implícitas e comparação com o modelo (`pages/6_Odds.py`).
 - [x] **Análise de Arbitragem**: estatísticas detalhadas da **API Futebol** (faltas, cartões, posse, passes, finalizações) com testes estatísticos (`pages/5_Arbitragem.py`).
-- [x] **Automação**: workflow do GitHub Actions (`.github/workflows/update_data.yml`) executando o pipeline diariamente com commit automático.
+- [ ] **Automação**: workflow do GitHub Actions executando o pipeline diariamente com commit automático (ainda não criado).
 - [ ] **Mais Features**: Adicionar estatísticas de jogadores (gols, assistências, cartões).
 - [ ] **Modelo de Redes Neurais**: Experimentar LSTM para séries temporais de desempenho.
 - [ ] **Validação out-of-sample**: calibrar o limiar da combinação modelo + odds com dados reais de edições anteriores.

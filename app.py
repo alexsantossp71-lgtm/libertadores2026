@@ -14,9 +14,9 @@ Execução::
 
     streamlit run app.py
 
-Os dados são carregados de ``data/raw/*.csv``. Caso os arquivos não existam
-(eles são ignorados pelo Git), o scraper é executado automaticamente para
-gerar a base de exemplo.
+Os dados são 100% reais (openfootball 2012–2026 + suplementos ESPN/FBref),
+versionados em ``data/historical/`` e materializados em ``data/raw/*.csv``
+pelo ``src/real_data.py``. Nenhum dado simulado é usado.
 """
 
 from __future__ import annotations
@@ -332,16 +332,15 @@ with st.sidebar:
 
     st.divider()
     st.markdown("## 🗂️ Dados")
-    if st.button("🔄 Recarregar dados (scraper)", width="stretch"):
+    if st.button("🔄 Recarregar dados reais", width="stretch"):
         LibertadoresScraper().run()
         st.cache_data.clear()
         st.cache_resource.clear()
         st.success("Dados atualizados!")
 
     st.caption(
-        "Fonte: `data/raw/*.csv` (gerados por `src/scraper.py`). "
-        "Os dados atuais são de exemplo — troque o scraper por uma fonte real "
-        "para previsões válidas."
+        "Fonte: dados reais — openfootball/south-america (2012–2026) "
+        "+ ESPN/FBref (`src/real_data.py`). Nada simulado."
     )
 
     st.divider()
@@ -432,8 +431,15 @@ try:
         else:
             m3.metric("📊 Acertos das odds", "—")
             m4.metric("🎯 Acertos do modelo", "—")
-except Exception:
-    pass  # análises opcionais: não quebra o dashboard se faltarem dados
+except FileNotFoundError:
+    st.info(
+        "As análises de arbitragem e odds exigem chaves de API reais "
+        "(API_FUTEBOL_KEY / BSD_API — ver `.env.example`). "
+        "Sem chaves, nenhuma base simulada é usada."
+    )
+except Exception as exc:  # análises opcionais: não quebram o dashboard
+    with st.expander("⚠️ Análises opcionais indisponíveis (detalhes)"):
+        st.write(exc)
 
 tab_geral, tab_quartas, tab_sim, tab_mc, tab_sobre = st.tabs(
     ["📊 Visão geral", "🔮 Quartas de final", "⚔️ Simulador", "🎲 Monte Carlo", "ℹ️ Sobre"]
@@ -815,7 +821,8 @@ soma dos triângulos e da diagonal da matriz de placares.
 
     st.markdown("#### Estrutura do projeto")
     st.code(
-        "src/scraper.py        → coleta de dados (atualmente dados de exemplo)\n"
+        "src/real_data.py      → dados reais 2012–2026 (openfootball + ESPN/FBref)\n"
+        "src/scraper.py        → materializa as tabelas do dashboard a partir deles\n"
         "src/preprocessing.py  → engenharia de features\n"
         "src/poisson.py        → modelo de Poisson (usado por este app)\n"
         "src/model.py          → XGBoost + Poisson\n"
@@ -828,10 +835,10 @@ soma dos triângulos e da diagonal da matriz de placares.
     st.markdown(
         """
         <div class="disclaimer">
-        ⚠️ <b>Aviso:</b> as previsões são estatísticas e baseadas em dados de exemplo
-        da fase de grupos. Lesões, suspensões, calendário, decisões táticas e
-        mercado de transferências não são considerados. Uso educacional —
-        não é recomendação de aposta.
+        ⚠️ <b>Aviso:</b> as previsões são estatísticas e baseadas em dados <b>reais</b>
+        da fase de grupos 2026 (32 times · openfootball + ESPN/FBref). Lesões,
+        suspensões, calendário, decisões táticas e mercado de transferências
+        não são considerados. Uso educacional — não é recomendação de aposta.
         </div>
         """,
         unsafe_allow_html=True,
