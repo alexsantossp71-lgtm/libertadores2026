@@ -245,8 +245,9 @@ def short_name(name: str) -> str:
         return _CANONICAL[key]
     stripped = key
     for prefix in _PREFIXES:
-        if stripped.startswith(normalize_name(prefix)):
-            stripped = stripped[len(normalize_name(prefix)):].strip()
+        p = normalize_name(prefix)
+        if p and key.startswith(p + " "):  # limite de palavra: "CA " ≠ "CAR"
+            stripped = key[len(p) + 1:].strip()
             break
     if stripped in _CANONICAL:
         return _CANONICAL[stripped]

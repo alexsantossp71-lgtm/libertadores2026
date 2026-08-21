@@ -108,6 +108,24 @@ st.markdown(
           display: inline-block; padding: 2px 10px; border-radius: 999px;
           font-size: 0.75rem; font-weight: 600; background: #12a05c; color: #042413;
       }
+      .champbanner {
+          background: linear-gradient(120deg, #04361f 0%, #0a6b3d 60%, #12a05c 100%);
+          border: 1px solid #1f7a4d;
+          border-radius: 18px;
+          padding: 28px 32px;
+          margin-top: 18px;
+          text-align: center;
+          color: #ffffff;
+          box-shadow: 0 8px 28px rgba(18, 160, 92, 0.25);
+      }
+      .champbanner .champlabel {
+          font-size: 0.8rem; letter-spacing: 2.5px; opacity: 0.85; font-weight: 700;
+      }
+      .champbanner .champteam {
+          font-size: 2.4rem; font-weight: 800; margin: 8px 0 4px 0; letter-spacing: -0.5px;
+      }
+      .champbanner .champprob { font-size: 1.05rem; font-weight: 600; }
+      .champbanner .champpath { font-size: 0.85rem; opacity: 0.8; margin-top: 8px; }
       .disclaimer { font-size: 0.82rem; opacity: 0.75; line-height: 1.5; }
     </style>
     """,
@@ -182,6 +200,32 @@ def prob_bar(p_home: float, p_draw: float, p_away: float, home: str, away: str) 
         yaxis=dict(showticklabels=False),
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="rgba(0,0,0,0)",
+    )
+    return fig
+
+
+def two_way_bar(p_a: float, p_b: float, name_a: str, name_b: str) -> go.Figure:
+    """Barra horizontal de dois lados (probabilidade de avançar/vencer)."""
+    fig = go.Figure()
+    fig.add_bar(
+        y=[""], x=[p_a * 100], name=name_a, orientation="h",
+        marker_color="#12a05c",
+        text=[f"{name_a} {p_a:.0%}"], textposition="inside", insidetextanchor="start",
+        hovertemplate=f"{name_a}: %{{x:.1f}}%<extra></extra>",
+    )
+    fig.add_bar(
+        y=[""], x=[p_b * 100], name=name_b, orientation="h",
+        marker_color="#3d6f8f",
+        text=[f"{name_b} {p_b:.0%}"], textposition="inside", insidetextanchor="end",
+        hovertemplate=f"{name_b}: %{{x:.1f}}%<extra></extra>",
+    )
+    fig.update_layout(
+        barmode="stack", height=64,
+        margin=dict(l=8, r=8, t=4, b=4), showlegend=False,
+        xaxis=dict(range=[0, 100], showticklabels=False, showgrid=False),
+        yaxis=dict(showticklabels=False),
+        paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
+        font=dict(color="#e8f2ec"),
     )
     return fig
 
@@ -441,8 +485,8 @@ except Exception as exc:  # análises opcionais: não quebram o dashboard
     with st.expander("⚠️ Análises opcionais indisponíveis (detalhes)"):
         st.write(exc)
 
-tab_geral, tab_quartas, tab_sim, tab_mc, tab_sobre = st.tabs(
-    ["📊 Visão geral", "🔮 Quartas de final", "⚔️ Simulador", "🎲 Monte Carlo", "ℹ️ Sobre"]
+tab_geral, tab_mata, tab_sim, tab_mc, tab_sobre = st.tabs(
+    ["📊 Visão geral", "🏆 Mata-mata até o título", "⚔️ Simulador", "🎲 Monte Carlo", "ℹ️ Sobre"]
 )
 
 # --------------------------------------------------------------------------- #
@@ -524,109 +568,252 @@ with tab_geral:
 # --------------------------------------------------------------------------- #
 # Tab 2 — Quartas de final
 # --------------------------------------------------------------------------- #
-with tab_quartas:
-    st.subheader("Previsões das quartas de final")
+with tab_mata:
+    st.subheader("🏆 O caminho até o título")
+    st.caption(
+        "Quartas **reais** (ida 09/09 · volta 16/09) · semis e final **previstas** pelo "
+        "caminho do favorito (avança o time com maior probabilidade de classificação). "
+        "Confrontos de ida e volta com pênaltis em 50/50; final em jogo único, 28/11, "
+        "campo neutro. Emparelhamento das semis na ordem do chaveamento (QF1×QF2, QF3×QF4)."
+    )
 
-    linhas = []
+    # --- 4º confronto ainda em aberto (volta Tolima × IDV em 25/08) --------
+    qf_rows = []
+    pendencia = None
     for _, row in quartas.iterrows():
-        mandante, visitante = row["Mandante"], row["Visitante"]
-        if mandante not in model.teams or visitante not in model.teams:
-            st.warning(f"Confronto ignorado: {mandante} x {visitante} (time fora da base).")
-            continue
-        p = model.match_probabilities(mandante, visitante)
-        favorito = max(
-            [(mandante, p["p_home"]), ("Empate", p["p_draw"]), (visitante, p["p_away"])],
-            key=lambda t: t[1],
-        )[0]
-        linhas.append(
-            {
-                "Confronto": row["Confronto"],
-                "Mandante": mandante,
-                "Visitante": visitante,
-                "Pais_Mandante": row.get("Pais_Mandante", ""),
-                "Pais_Visitante": row.get("Pais_Visitante", ""),
-                "Data_Ida": row.get("Data_Ida", ""),
-                "Data_Volta": row.get("Data_Volta", ""),
-                "Prob_Mandante": p["p_home"],
-                "Prob_Empate": p["p_draw"],
-                "Prob_Visitante": p["p_away"],
-                "xG_Mandante": p["expected_goals_home"],
-                "xG_Visitante": p["expected_goals_away"],
-                "Placar_Previsto": f"{p['most_likely_score'][0]} x {p['most_likely_score'][1]}",
-                "Favorito": favorito,
-            }
+        if row["Mandante"] in model.teams and row["Visitante"] in model.teams:
+            qf_rows.append({"label": row["Confronto"], "a": row["Mandante"], "b": row["Visitante"],
+                            "pais_a": row.get("Pais_Mandante", ""), "pais_b": row.get("Pais_Visitante", ""),
+                            "data_ida": row.get("Data_Ida", ""), "data_volta": row.get("Data_Volta", "")})
+        else:
+            pendencia = row
+
+    cenario_lbl = None
+    if pendencia is not None:
+        opcoes = [t for t in ("Independiente del Valle", "Tolima") if t in model.teams]
+        col_sel, col_info = st.columns([1, 2.2])
+        with col_sel:
+            cenario_lbl = st.selectbox(
+                "4º confronto — adversário do Flamengo (volta Tolima × IDV em 25/08):",
+                opcoes, index=0,
+            )
+        with col_info:
+            st.info(
+                f"**{pendencia['Mandante']}** aguarda o vencedor de **Tolima × Independiente "
+                "del Valle** (ida já jogada: 0–1). Escolha o cenário acima para completar o "
+                "chaveamento."
+            )
+        qf_rows.append({"label": pendencia["Confronto"], "a": pendencia["Mandante"], "b": cenario_lbl,
+                        "pais_a": pendencia.get("Pais_Mandante", ""),
+                        "pais_b": team_country(grupos, cenario_lbl),
+                        "data_ida": "a definir", "data_volta": "a definir"})
+
+    qf_rows = sorted(qf_rows, key=lambda r: r["label"])
+
+    # ------------------------------------------------------------------ #
+    # Quartas de final (reais)
+    # ------------------------------------------------------------------ #
+    st.markdown("#### 🥅 Quartas de final")
+
+    qf = []
+    for r in qf_rows:
+        t = model.tie_probabilities(r["a"], r["b"])
+        t.update(r)
+        t["favorito"] = r["a"] if t["p_advance_a"] >= t["p_advance_b"] else r["b"]
+        qf.append(t)
+
+    def card_confronto(t, fase_extra="", compact=False):
+        pa, pb = t["p_advance_a"], t["p_advance_b"]
+        with st.container(border=True):
+            st.markdown(
+                f"**{flag(t['pais_a'])} {t['a']}** <span style='opacity:.55'>×</span> "
+                f"**{t['b']} {flag(t['pais_b'])}** "
+                f"<span class='pill'>{t['label']}{fase_extra}</span>",
+                unsafe_allow_html=True,
+            )
+            st.caption(
+                f"Ida {t['data_ida']} · Volta {t['data_volta']} · "
+                f"Pênaltis (agregado empatado): {t['p_aggregate_draw']:.0%}"
+            )
+            st.plotly_chart(
+                two_way_bar(pa, pb, t["a"], t["b"]),
+                width="stretch",
+                key=f"bar2w_{t['label']}_{t['a']}_{t['b']}",
+            )
+            k1, k2 = st.columns(2)
+            k1.metric("Classifica", t["favorito"], f"{max(pa, pb):.0%}")
+            k2.metric(
+                "Agregado provável",
+                f"{t['agg_mais_provavel'][0]} × {t['agg_mais_provavel'][1]}",
+            )
+            if not compact:
+                with st.expander("Detalhes das pernas"):
+                    la, lb = t["lambda_ida"]
+                    va, vb = t["lambda_volta"]
+                    st.write(
+                        f"**Ida** ({t['a']} em casa): gols esperados {la:.2f} × {lb:.2f}\n\n"
+                        f"**Volta** ({t['b']} em casa): gols esperados {vb:.2f} × {va:.2f}"
+                    )
+                    ida = model.match_probabilities(t["a"], t["b"])
+                    st.plotly_chart(
+                        prob_bar(ida["p_home"], ida["p_draw"], ida["p_away"], t["a"], t["b"]),
+                        width="stretch",
+                        key=f"bar_ida_{t['label']}_{t['a']}_{t['b']}",
+                    )
+
+    cols = st.columns(2)
+    for i, t in enumerate(qf[:2]):
+        with cols[i]:
+            card_confronto(t)
+    cols = st.columns(2)
+    for i, t in enumerate(qf[2:4]):
+        with cols[i]:
+            card_confronto(t)
+
+    # ------------------------------------------------------------------ #
+    # Semifinais (previstas)
+    # ------------------------------------------------------------------ #
+    st.markdown("#### ⚔️ Semifinais — previstas")
+
+    sf_pairs = [
+        {"label": "SF1", "a": qf[0]["favorito"], "b": qf[1]["favorito"]},
+        {"label": "SF2", "a": qf[2]["favorito"], "b": qf[3]["favorito"]},
+    ]
+    sf = []
+    for r in sf_pairs:
+        t = model.tie_probabilities(r["a"], r["b"])
+        t.update(r)
+        t["pais_a"] = team_country(grupos, r["a"])
+        t["pais_b"] = team_country(grupos, r["b"])
+        t["data_ida"] = "13/10"
+        t["data_volta"] = "20/10"
+        t["favorito"] = r["a"] if t["p_advance_a"] >= t["p_advance_b"] else r["b"]
+        sf.append(t)
+
+    cols = st.columns(2)
+    for i, t in enumerate(sf):
+        with cols[i]:
+            card_confronto(t, fase_extra=" (prevista)", compact=True)
+
+    # ------------------------------------------------------------------ #
+    # Final (prevista, campo neutro)
+    # ------------------------------------------------------------------ #
+    st.markdown("#### 🏁 Final — prevista (28/11 · jogo único · campo neutro)")
+
+    final = {
+        "a": sf[0]["favorito"], "b": sf[1]["favorito"],
+        "pais_a": team_country(grupos, sf[0]["favorito"]),
+        "pais_b": team_country(grupos, sf[1]["favorito"]),
+        "label": "F", "data_ida": "28/11", "data_volta": "—",
+    }
+    cup = model.cup_tie_probabilities(final["a"], final["b"])
+    final["p_advance_a"] = cup["p_win_a"]
+    final["p_advance_b"] = cup["p_win_b"]
+    final["p_aggregate_draw"] = cup["p_draw_90min"]
+    final["agg_mais_provavel"] = cup["placar_mais_provavel"]
+    final["lambda_ida"] = cup["xg"]
+    final["lambda_volta"] = cup["xg"]
+    final["favorito"] = final["a"] if cup["p_win_a"] >= cup["p_win_b"] else final["b"]
+
+    with st.container(border=True):
+        st.markdown(
+            f"**{flag(final['pais_a'])} {final['a']}** <span style='opacity:.55'>×</span> "
+            f"**{final['b']} {flag(final['pais_b'])}** "
+            f"<span class='pill'>Final (prevista)</span>",
+            unsafe_allow_html=True,
         )
+        st.caption(
+            f"Empate em 90 min: {cup['p_draw_90min']:.0%} (prorrogação + pênaltis 50/50) · "
+            f"gols esperados {cup['xg'][0]:.2f} × {cup['xg'][1]:.2f}"
+        )
+        st.plotly_chart(
+            two_way_bar(cup["p_win_a"], cup["p_win_b"], final["a"], final["b"]),
+            width="stretch", key="bar_final",
+        )
+        k1, k2 = st.columns(2)
+        k1.metric("Campeão provável", final["favorito"], f"{max(cup['p_win_a'], cup['p_win_b']):.0%}")
+        k2.metric("Placar provável (90 min)", f"{cup['placar_mais_provavel'][0]} × {cup['placar_mais_provavel'][1]}")
 
-    preds = pd.DataFrame(linhas)
+    # ------------------------------------------------------------------ #
+    # Campeão + caminho
+    # ------------------------------------------------------------------ #
+    titulo = {}
+    for t in qf:
+        eu, adv_sf = t["favorito"], None
+        # adversário na semi = favorito do confronto vizinho
+        idx_par = {0: 1, 1: 0, 2: 3, 3: 2}[qf.index(t)]
+        vizinho = qf[idx_par]["favorito"]
+        sf_match = model.tie_probabilities(eu, vizinho) if eu != vizinho else None
+        p_sf = sf_match["p_advance_a"] if sf_match else 1.0
+        # adversário na final = favorito da outra semi
+        outra = [x["favorito"] for x in sf if x["favorito"] not in (eu, vizinho)]
+        adv_final = outra[0] if outra else None
+        p_f = model.cup_tie_probabilities(eu, adv_final)["p_win_a"] if adv_final and eu != adv_final else 1.0
+        titulo[eu] = {
+            "p_qf": max(t["p_advance_a"], t["p_advance_b"]),
+            "p_sf": p_sf,
+            "p_f": p_f,
+            "total": max(t["p_advance_a"], t["p_advance_b"]) * p_sf * p_f,
+            "adv_qf": t["a"] if t["favorito"] == t["b"] else t["b"],
+            "adv_sf": vizinho,
+            "adv_f": adv_final,
+        }
 
-    if preds.empty:
-        st.info("Nenhum confronto disponível para previsão.")
-    else:
-        cards = st.columns(2)
-        for i, row in preds.iterrows():
-            with cards[i % 2]:
-                st.markdown(
-                    f"""
-                    <div class="matchcard">
-                      <div class="teams">{flag(row['Pais_Mandante'])} {row['Mandante']}
-                          <span style="opacity:.6">x</span>
-                          {row['Visitante']} {flag(row['Pais_Visitante'])}</div>
-                      <div class="meta">{row['Confronto']} · Ida {row['Data_Ida']} ·
-                          Volta {row['Data_Volta']} ·
-                          <span class="pill">Favorito: {row['Favorito']}</span></div>
-                    </div>
-                    """,
-                    unsafe_allow_html=True,
-                )
-                st.plotly_chart(
-                    prob_bar(
-                        row["Prob_Mandante"],
-                        row["Prob_Empate"],
-                        row["Prob_Visitante"],
-                        row["Mandante"],
-                        row["Visitante"],
-                    ),
-                    width="stretch",
-                    key=f"bar_{row['Confronto']}",
-                )
-                m1, m2 = st.columns(2)
-                m1.metric(
-                    "Gols esperados",
-                    f"{row['xG_Mandante']:.2f} x {row['xG_Visitante']:.2f}",
-                )
-                m2.metric("Placar mais provável", row["Placar_Previsto"])
+    campeao = max(titulo, key=lambda k: titulo[k]["total"])
+    tt = titulo[campeao]
+    st.markdown(
+        f"""
+        <div class="champbanner">
+          <div class="champlabel">🏆 CAMPEÃO PREVISTO — CAMINHO DO FAVORITO</div>
+          <div class="champteam">{flag(team_country(grupos, campeao))} {campeao}</div>
+          <div class="champprob">{tt['total']:.0%} de chance de título
+            <span style="opacity:.7;font-size:.85rem">
+              (QF {tt['p_qf']:.0%} × SF {tt['p_sf']:.0%} × Final {tt['p_f']:.0%})</span></div>
+          <div class="champpath">Caminho: {tt['adv_qf']} (quartas) → {tt['adv_sf']} (semis) → {tt['adv_f']} (final)</div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
 
-        st.divider()
-        st.markdown("#### Tabela consolidada")
+    with st.expander("📋 Chances de título dos semifinalistas previstos"):
+        linhas_titulo = [
+            {"Time": t, "Quartas": d["p_qf"], "Semis": d["p_sf"], "Final": d["p_f"], "Título": d["total"]}
+            for t, d in sorted(titulo.items(), key=lambda kv: -kv[1]["total"])
+        ]
         st.dataframe(
-            preds.drop(columns=["Pais_Mandante", "Pais_Visitante"]),
-            width="stretch",
-            hide_index=True,
+            pd.DataFrame(linhas_titulo),
+            width="stretch", hide_index=True,
             column_config={
-                "Prob_Mandante": st.column_config.ProgressColumn(
-                    "P(mandante)", format="%.1f%%", min_value=0.0, max_value=1.0
-                ),
-                "Prob_Empate": st.column_config.ProgressColumn(
-                    "P(empate)", format="%.1f%%", min_value=0.0, max_value=1.0
-                ),
-                "Prob_Visitante": st.column_config.ProgressColumn(
-                    "P(visitante)", format="%.1f%%", min_value=0.0, max_value=1.0
-                ),
-                "xG_Mandante": st.column_config.NumberColumn("xG mandante", format="%.2f"),
-                "xG_Visitante": st.column_config.NumberColumn("xG visitante", format="%.2f"),
+                c: st.column_config.ProgressColumn(c, format="%.0f%%", min_value=0.0, max_value=1.0)
+                for c in ("Quartas", "Semis", "Final", "Título")
             },
         )
+        st.caption(
+            "Produto das probabilidades ao longo do caminho do favorito — não é Monte Carlo "
+            "(para isso, veja a aba 🎲). Pênaltis: 50/50, pois o modelo não prevê disputas."
+        )
 
-        csv = preds.to_csv(index=False).encode("utf-8")
+    # Tabela consolidada das quartas + download
+    with st.expander("📋 Tabela consolidada das quartas (probabilidades por perna)"):
+        linhas = []
+        for r in qf_rows:
+            ida = model.match_probabilities(r["a"], r["b"])
+            linhas.append({
+                "Confronto": r["label"], "Mandante (ida)": r["a"], "Visitante": r["b"],
+                "P_ida_mandante": ida["p_home"], "P_empate": ida["p_draw"], "P_ida_visitante": ida["p_away"],
+                "xG_ida": f"{ida['expected_goals_home']:.2f} x {ida['expected_goals_away']:.2f}",
+                "Placar_ida": f"{ida['most_likely_score'][0]} x {ida['most_likely_score'][1]}",
+            })
+        preds = pd.DataFrame(linhas)
+        st.dataframe(preds, width="stretch", hide_index=True)
         st.download_button(
             "⬇️ Baixar previsões (CSV)",
-            data=csv,
-            file_name="quartas_previsao.csv",
+            data=preds.to_csv(index=False).encode("utf-8"),
+            file_name="mata_mata_previsao.csv",
             mime="text/csv",
         )
 
 
-# --------------------------------------------------------------------------- #
 # Tab 3 — Simulador de confronto
 # --------------------------------------------------------------------------- #
 with tab_sim:

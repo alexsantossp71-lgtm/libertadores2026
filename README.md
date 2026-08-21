@@ -306,6 +306,13 @@ Com base nos dados atuais e na análise estatística preliminar, as probabilidad
 (32 times; média real de 1,17 gols/time/jogo). QF4 aguarda o vencedor de
 Tolima × Independiente del Valle (25/08).*
 
+A aba **🏆 Mata-mata até o título** do dashboard mostra o chaveamento completo em
+cards por fase (quartas reais → semis e final previstas → **campeão previsto com
+% de título**), calculando confrontos de ida e volta por convolução das matrizes
+de Poisson (pênaltis 50/50) e a final em campo neutro. Na data desta atualização,
+o caminho do favorito aponta **Flamengo** (~52% de título) passando por
+Independiente del Valle, Palmeiras e Corinthians.*
+
 > ⚠️ **Observação**: Estas previsões são baseadas em dados estatísticos e não consideram fatores imprevistos como lesões, suspensões ou mudanças táticas de última hora. O modelo será atualizado conforme novos dados forem disponibilizados.
 
 ---
