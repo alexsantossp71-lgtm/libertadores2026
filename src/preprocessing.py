@@ -144,20 +144,34 @@ class Preprocessor:
     # ------------------------------------------------------------------ #
     # Novas fontes: estatísticas detalhadas e odds (arbitragem/mercado)
     # ------------------------------------------------------------------ #
+    @staticmethod
+    def _permitir_exemplo() -> bool:
+        """Fallback para base sintética só com opt-in explícito."""
+        import os
+
+        return os.getenv("ALLOW_EXAMPLE_DATA", "").lower() in ("1", "true", "yes")
+
     def load_estatisticas(self) -> pd.DataFrame:
         """
-        Carrega as estatísticas detalhadas das partidas.
+        Carrega as estatísticas detalhadas das partidas (API Futebol).
 
         Ordem de prioridade:
           1. ``data/processed/libertadores_estatisticas_detalhadas.csv``
              (gerado pelo pipeline a partir da API Futebol);
-          2. ``data/examples/partidas_libertadores_2026.csv``;
-          3. geração da base de exemplo em memória.
+          2. base de exemplo — **apenas** se ``ALLOW_EXAMPLE_DATA=1``
+             (desligada por padrão: o projeto usa somente dados reais).
         """
         from api_futebol_client import PROCESSED_PATH as STATS_PATH
 
         if STATS_PATH.exists():
             return pd.read_csv(STATS_PATH)
+
+        if not self._permitir_exemplo():
+            raise FileNotFoundError(
+                "Estatísticas detalhadas reais indisponíveis: configure "
+                "API_FUTEBOL_KEY (ver .env.example) e rode o pipeline. "
+                "Para usar a base sintética em desenvolvimento: ALLOW_EXAMPLE_DATA=1."
+            )
         from generate_example_data import EXAMPLE_PARTIDAS_PATH, generate_partidas
 
         if EXAMPLE_PARTIDAS_PATH.exists():
@@ -166,17 +180,23 @@ class Preprocessor:
 
     def load_odds(self) -> pd.DataFrame:
         """
-        Carrega as odds processadas das partidas.
+        Carrega as odds processadas das partidas (Bzzoiro Sports Data).
 
         Ordem de prioridade:
           1. ``data/processed/libertadores_odds.csv`` (gerado pelo pipeline);
-          2. ``data/examples/odds_libertadores_2026.csv``;
-          3. geração da base de exemplo em memória.
+          2. base de exemplo — **apenas** se ``ALLOW_EXAMPLE_DATA=1``.
         """
         from odds_client import PROCESSED_PATH as ODDS_PATH
 
         if ODDS_PATH.exists():
             return pd.read_csv(ODDS_PATH)
+
+        if not self._permitir_exemplo():
+            raise FileNotFoundError(
+                "Odds reais indisponíveis: configure BSD_API "
+                "(ver .env.example) e rode o pipeline. "
+                "Para usar a base sintética em desenvolvimento: ALLOW_EXAMPLE_DATA=1."
+            )
         from generate_example_data import EXAMPLE_ODDS_PATH, generate_odds
 
         if EXAMPLE_ODDS_PATH.exists():

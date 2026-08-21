@@ -140,7 +140,9 @@ class PoissonScoreModel:
                 f"Times conhecidos: {self.teams}"
             )
 
-    def expected_goals(self, home: str, away: str) -> Tuple[float, float]:
+    def expected_goals(
+        self, home: str, away: str, neutral: bool = False
+    ) -> Tuple[float, float]:
         """Retorna os gols esperados (lambdas) para um confronto.
 
         Parameters
@@ -149,6 +151,9 @@ class PoissonScoreModel:
             Nome do time mandante.
         away : str
             Nome do time visitante.
+        neutral : bool
+            Se ``True``, desliga a vantagem de campo (fatores 1.0 para os
+            dois lados) — usado em finais em campo neutro.
 
         Returns
         -------
@@ -158,22 +163,26 @@ class PoissonScoreModel:
         self._check_team(home, "attack")
         self._check_team(away, "defense")
 
+        home_factor = 1.0 if neutral else self.home_advantage
+        away_factor = 1.0 if neutral else self.away_factor
+
         lam_home = (
             self.attack[home]
             * self.defense[away]
-            * self.home_advantage
+            * home_factor
             / self.league_avg
         )
         lam_away = (
             self.attack[away]
             * self.defense[home]
-            * self.away_factor
+            * away_factor
             / self.league_avg
         )
         return lam_home, lam_away
 
     def score_probability_matrix(
-        self, home: str, away: str, max_goals: Optional[int] = None
+        self, home: str, away: str, max_goals: Optional[int] = None,
+        neutral: bool = False,
     ) -> np.ndarray:
         """Matriz de probabilidade de placares.
 
@@ -186,7 +195,7 @@ class PoissonScoreModel:
             Matriz ``(max_goals + 1) x (max_goals + 1)``.
         """
         max_goals = max_goals or self.max_goals
-        lam_home, lam_away = self.expected_goals(home, away)
+        lam_home, lam_away = self.expected_goals(home, away, neutral=neutral)
 
         goals = np.arange(max_goals + 1)
         prob_home = poisson.pmf(goals, lam_home)
@@ -195,18 +204,17 @@ class PoissonScoreModel:
         return np.outer(prob_home, prob_away)
 
     def match_probabilities(
-        self, home: str, away: str, max_goals: Optional[int] = None
+        self, home: str, away: str, max_goals: Optional[int] = None,
+        neutral: bool = False,
     ) -> Dict[str, float]:
         """Probabilidades 1X2 e placar mais provável para um confronto.
 
-        Returns
-        -------
-        dict
-            Chaves: ``p_home``, ``p_draw``, ``p_away``, ``expected_goals_home``,
-            ``expected_goals_away`` e ``most_likely_score`` (tupla ``(i, j)``).
+        Com ``neutral=True`` a vantagem de campo é desligada (final em campo
+        neutro); ``p_home``/``p_away`` passam a se referir aos dois lados
+        sem mando.
         """
         max_goals = max_goals or self.max_goals
-        matrix = self.score_probability_matrix(home, away, max_goals)
+        matrix = self.score_probability_matrix(home, away, max_goals, neutral=neutral)
 
         # Mandante vence quando marca mais gols que o visitante.
         # Na matriz ``matrix[i, j]``, ``i`` é o placar do mandante e ``j`` o do
@@ -235,6 +243,82 @@ class PoissonScoreModel:
             "p_draw": p_draw,
             "p_away": p_away,
             "most_likely_score": (int(i), int(j)),
+        }
+
+    def tie_probabilities(
+        self, team_a: str, team_b: str, max_goals: Optional[int] = None
+    ) -> Dict[str, float]:
+        """Probabilidades de um confronto eliminatório em ida e volta.
+
+        ``team_a`` manda o jogo de ida; ``team_b`` manda a volta. A
+        probabilidade de avançar soma os placares agregados das duas pernas
+        (matrizes de Poisson convoluídas); empate no agregado é decidido por
+        pênaltis e modelado como 50/50 — informação que o modelo não tem.
+
+        Returns
+        -------
+        dict
+            ``p_advance_a``, ``p_advance_b``, ``p_aggregate_draw`` (pênaltis),
+            ``agg_mais_provavel`` (tupla de gols agregados), ``lambda_ida``
+            e ``lambda_volta`` (gols esperados por perna).
+        """
+        self._check_team(team_a, "attack")
+        self._check_team(team_b, "attack")
+
+        m_ida = self.score_probability_matrix(team_a, team_b, max_goals)
+        m_volta = self.score_probability_matrix(team_b, team_a, max_goals)
+
+        # Enumeração conjunta das duas pernas: A marca i (ida) + l (volta);
+        # B marca j (ida) + k (volta).
+        n = m_ida.shape[0]
+        idx = np.arange(n)
+        ga = np.add.outer(idx, np.zeros(n))[:, :, None, None] + np.add.outer(np.zeros(n), idx)[None, None, :, :]
+        gb = np.add.outer(np.zeros(n), idx)[:, :, None, None] + np.add.outer(idx, np.zeros(n))[None, None, :, :]
+
+        joint = m_ida[:, :, None, None] * m_volta[None, None, :, :]
+        flat = joint.ravel()
+        total = flat.sum()
+        a_flat, b_flat = ga.ravel(), gb.ravel()
+
+        p_a = float(flat[a_flat > b_flat].sum() / total)
+        p_b = float(flat[a_flat < b_flat].sum() / total)
+        p_pen = float(flat[a_flat == b_flat].sum() / total)
+
+        combos: Dict[Tuple[int, int], float] = {}
+        for x, y, p in zip(a_flat, b_flat, flat):
+            key = (int(x), int(y))
+            combos[key] = combos.get(key, 0.0) + float(p)
+        agg_ml = max(combos, key=combos.get)
+
+        lam_a1, lam_b1 = self.expected_goals(team_a, team_b)
+        lam_b2, lam_a2 = self.expected_goals(team_b, team_a)
+
+        return {
+            "team_a": team_a,
+            "team_b": team_b,
+            "p_advance_a": p_a + 0.5 * p_pen,
+            "p_advance_b": p_b + 0.5 * p_pen,
+            "p_aggregate_draw": p_pen,
+            "agg_mais_provavel": agg_ml,
+            "lambda_ida": (lam_a1, lam_b1),
+            "lambda_volta": (lam_a2, lam_b2),
+        }
+
+    def cup_tie_probabilities(
+        self, team_a: str, team_b: str, max_goals: Optional[int] = None
+    ) -> Dict[str, float]:
+        """Probabilidades de vencer um jogo único em campo neutro (final).
+
+        Vitória em 90 minutos pela matriz de Poisson neutra; empate vai para
+        prorrogação + pênaltis, modelado como 50/50.
+        """
+        probs = self.match_probabilities(team_a, team_b, max_goals, neutral=True)
+        return {
+            "p_win_a": probs["p_home"] + 0.5 * probs["p_draw"],
+            "p_win_b": probs["p_away"] + 0.5 * probs["p_draw"],
+            "p_draw_90min": probs["p_draw"],
+            "placar_mais_provavel": probs["most_likely_score"],
+            "xg": (probs["expected_goals_home"], probs["expected_goals_away"]),
         }
 
     # ------------------------------------------------------------------ #

@@ -182,8 +182,39 @@ def test_combined_probabilities_rule():
     assert list(out["usou_mercado"]) == [True, False]
 
 
-def test_load_estatisticas_and_odds_fallback():
-    """Os loaders funcionam offline usando as bases de exemplo."""
+def test_load_estatisticas_raises_without_flag(monkeypatch, tmp_path):
+    """Sem ALLOW_EXAMPLE_DATA a base sintética é recusada (só dados reais)."""
+    import sys
+    from pathlib import Path
+
+    monkeypatch.delenv("ALLOW_EXAMPLE_DATA", raising=False)
+    sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
+    import api_futebol_client
+    import odds_client
+
+    monkeypatch.setattr(api_futebol_client, "PROCESSED_PATH", tmp_path / "nao_existe.csv")
+    monkeypatch.setattr(odds_client, "PROCESSED_PATH", tmp_path / "nao_existe.csv")
+
+    preprocessor = Preprocessor()
+    with pytest.raises(FileNotFoundError, match="ALLOW_EXAMPLE_DATA"):
+        preprocessor.load_estatisticas()
+    with pytest.raises(FileNotFoundError, match="ALLOW_EXAMPLE_DATA"):
+        preprocessor.load_odds()
+
+
+def test_load_estatisticas_and_odds_fallback(monkeypatch, tmp_path):
+    """Com ALLOW_EXAMPLE_DATA=1 os loaders funcionam offline (bases de exemplo)."""
+    import sys
+    from pathlib import Path
+
+    monkeypatch.setenv("ALLOW_EXAMPLE_DATA", "1")
+    sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
+    import api_futebol_client
+    import odds_client
+
+    monkeypatch.setattr(api_futebol_client, "PROCESSED_PATH", tmp_path / "nao_existe.csv")
+    monkeypatch.setattr(odds_client, "PROCESSED_PATH", tmp_path / "nao_existe.csv")
+
     preprocessor = Preprocessor()
     partidas = preprocessor.load_estatisticas()
     odds = preprocessor.load_odds()
