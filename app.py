@@ -294,6 +294,20 @@ def monte_carlo_bracket(
 # Sidebar
 # --------------------------------------------------------------------------- #
 with st.sidebar:
+    st.markdown("## 📑 Páginas")
+    st.page_link("app.py", label="🏠 Início — Previsões", icon="⚽")
+    st.page_link(
+        "pages/5_Arbitragem.py",
+        label="🟨 Arbitragem e Estatísticas",
+        icon="🟨",
+    )
+    st.page_link(
+        "pages/6_Odds.py",
+        label="📊 Odds e Probabilidades de Mercado",
+        icon="📊",
+    )
+    st.divider()
+
     st.markdown("## ⚙️ Parâmetros do modelo")
 
     home_advantage = st.slider(
@@ -356,6 +370,70 @@ c1.metric("Times analisados", len(model.teams))
 c2.metric("Média de gols/jogo", f"{model.league_avg:.2f}")
 c3.metric("Vantagem de mando", f"{model.home_advantage:.2f}×")
 c4.metric("Confrontos nas quartas", len(quartas))
+
+# --------------------------------------------------------------------------- #
+# Métricas resumidas das novas análises (arbitragem e odds)
+# --------------------------------------------------------------------------- #
+try:
+    from dashboard_utils import load_referee_summary, load_model_market
+    from preprocessing import Preprocessor as _Preprocessor
+
+    _resumo_arbitros = load_referee_summary()
+    _model_market = load_model_market()
+
+    if not _resumo_arbitros.empty:
+        _arbitro_top = _resumo_arbitros.iloc[0]
+        _arbitro_nome = _arbitro_top["arbitro"]
+        _arbitro_faltas = _arbitro_top["media_faltas"]
+
+        m1, m2, m3, m4 = st.columns(4)
+        m1.metric(
+            "🟨 Árbitro com mais faltas",
+            _arbitro_nome,
+            help=f"Média de {_arbitro_faltas:.1f} faltas por jogo.",
+        )
+        m2.metric(
+            "🟥 Cartões/jogo (média)",
+            f"{_resumo_arbitros['media_cartoes'].mean():.2f}",
+            help="Cartões amarelos + vermelhos por partida.",
+        )
+
+        if not _model_market.empty:
+            _pre = _Preprocessor()
+            _ev_odds = _pre.evaluate_probabilities(
+                _model_market,
+                ("prob_mandante_impl", "prob_empate_impl", "prob_visitante_impl"),
+            )
+            _ev_modelo = _pre.evaluate_probabilities(
+                _model_market,
+                (
+                    "prob_mandante_modelo",
+                    "prob_empate_modelo",
+                    "prob_visitante_modelo",
+                ),
+            )
+            m3.metric(
+                "📊 Acertos das odds",
+                f"{_ev_odds['acuracia']:.0%}",
+                delta=f"{_ev_odds['acuracia'] - _ev_modelo['acuracia']:+.0%} vs modelo",
+                help=(
+                    "Fração de jogos em que a classe mais provável das odds "
+                    "acertou o resultado."
+                ),
+            )
+            m4.metric(
+                "🎯 Acertos do modelo (Poisson)",
+                f"{_ev_modelo['acuracia']:.0%}",
+                help=(
+                    "Fração de jogos em que a classe mais provável do modelo "
+                    "acertou o resultado."
+                ),
+            )
+        else:
+            m3.metric("📊 Acertos das odds", "—")
+            m4.metric("🎯 Acertos do modelo", "—")
+except Exception:
+    pass  # análises opcionais: não quebra o dashboard se faltarem dados
 
 tab_geral, tab_quartas, tab_sim, tab_mc, tab_sobre = st.tabs(
     ["📊 Visão geral", "🔮 Quartas de final", "⚔️ Simulador", "🎲 Monte Carlo", "ℹ️ Sobre"]

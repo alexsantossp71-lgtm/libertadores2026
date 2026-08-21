@@ -4,6 +4,7 @@
 [![Pandas](https://img.shields.io/badge/Pandas-2.0%2B-orange)](https://pandas.pydata.org/)
 [![Scikit-learn](https://img.shields.io/badge/Scikit--learn-1.2%2B-yellow)](https://scikit-learn.org/)
 [![Streamlit](https://img.shields.io/badge/Streamlit-Dashboard-ff4b4b)](app.py)
+[![Atualização diária](https://img.shields.io/badge/CI-Atualiza%C3%A7%C3%A3o%20di%C3%A1ria-12a05c)](.github/workflows/update_data.yml)
 [![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
 
 ---
@@ -27,12 +28,18 @@ O projeto foi desenvolvido como parte do meu portfólio para demonstrar habilida
 Os dados foram coletados de fontes públicas confiáveis, incluindo:
 - [SofaScore](https://www.sofascore.com/) – Estatísticas de jogos
 - [Flashscore](https://www.flashscore.com.br/) – Resultados e tabelas
+- [Bzzoiro Sports Data](https://sports.bzzoiro.com/) – **Odds 1X2** (consenso multi-bookmaker)
+- [API Futebol](https://www.api-futebol.com.br/) – **Estatísticas detalhadas** (faltas, cartões, posse, passes, finalizações) e **arbitragem**
 - [Football-Data.org](https://www.football-data.org/) – API para dados históricos (em desenvolvimento)
 
 ### Dados Atuais (Libertadores 2026)
 - **Fase de Grupos**: Tabela completa com pontos, gols, saldo, etc.
 - **Oitavas de Final**: Resultados de ida e volta, classificados.
 - **Quartas de Final**: Confrontos definidos (datas: 09/09 e 16/09).
+- **Estatísticas detalhadas**: 48 partidas com faltas, cartões, posse, passes,
+  finalizações, escanteios, impedimentos, defesas e árbitro responsável.
+- **Odds 1X2**: odds decimais (consenso multi-bookmaker) e probabilidades
+  implícitas para cada partida.
 
 ### Estrutura dos Dados
 ```
@@ -40,12 +47,148 @@ data/
 ├── raw/
 │   ├── grupos_libertadores_2026.csv
 │   ├── oitavas_resultados.csv
-│   └── confrontos_quartas.csv
+│   ├── confrontos_quartas.csv
+│   ├── partidas_estatisticas_<id>.json   # cache da API Futebol
+│   └── odds_<event_id>.json              # cache da Bzzoiro
 ├── processed/
-│   └── features_libertadores.csv   # Dados com engenharia de features
+│   ├── features_libertadores.csv                  # Dados com engenharia de features
+│   ├── libertadores_estatisticas_detalhadas.csv   # Estatísticas por partida (API Futebol)
+│   └── libertadores_odds.csv                      # Odds 1X2 processadas (Bzzoiro)
+├── examples/          # Bases de exemplo (versionadas — fallback sem API)
+│   ├── partidas_libertadores_2026.csv
+│   └── odds_libertadores_2026.csv
 └── external/
     └── elo_rankings.csv            # Ranking Elo dos times (futuro)
 ```
+
+---
+
+## 📈 Dados de Odds e Arbitragem
+
+Esta seção documenta as duas novas fontes de dados integradas ao projeto e a
+metodologia de análise que as utiliza.
+
+### Fontes
+
+| Fonte | O que fornece | Módulo | Produto final |
+|-------|---------------|--------|---------------|
+| [Bzzoiro Sports Data](https://sports.bzzoiro.com/docs) | Odds decimais 1X2 (consenso multi-bookmaker) | [`src/odds_client.py`](src/odds_client.py) | `data/processed/libertadores_odds.csv` |
+| [API Futebol](https://www.api-futebol.com.br/) | Faltas, cartões, posse, passes, finalizações, escanteios, impedimentos, defesas e árbitro | [`src/api_futebol_client.py`](src/api_futebol_client.py) | `data/processed/libertadores_estatisticas_detalhadas.csv` |
+
+**Colunas do CSV de estatísticas (por partida):** `partida_id`, `data`, `fase`,
+`rodada`, `grupo`, `mandante`, `visitante`, `gols_mandante`, `gols_visitante`,
+`resultado`, `arbitro`, `arbitro_pais`, `faltas_*`, `cartoes_amarelos_*`,
+`cartoes_vermelhos_*`, `posse_*`, `passes_certos_*`, `passes_errados_*`,
+`finalizacoes_*`, `finalizacoes_no_gol_*`, `finalizacoes_fora_*`,
+`escanteios_*`, `impedimentos_*`, `defesas_*` (sempre por `mandante`/`visitante`).
+
+**Colunas do CSV de odds:** `odd_mandante`, `odd_empate`, `odd_visitante`,
+`prob_mandante_impl`, `prob_empate_impl`, `prob_visitante_impl` (implícitas =
+1/odd, normalizadas para remover a margem da casa), `margem`, `bookmaker` e o
+resultado real de cada partida.
+
+### Configuração das Chaves de API
+
+1. **Localmente** — copie o arquivo de exemplo e preencha as chaves:
+   ```bash
+   cp .env.example .env
+   # edite o .env:
+   #   BSD_API=sua_chave_bzzoiro
+   #   API_FUTEBOL_KEY=sua_chave_api_futebol
+   ```
+   O `.env` é carregado automaticamente por `python-dotenv` e **nunca deve ser
+   commitado** (já está no `.gitignore`).
+
+2. **No GitHub** — adicione as mesmas variáveis em
+   *Settings → Secrets and variables → Actions → New repository secret*:
+   | Secret | Usada por |
+   |--------|-----------|
+   | `BSD_API` | `src/odds_client.py` e o workflow `.github/workflows/update_data.yml` |
+   | `API_FUTEBOL_KEY` | `src/api_futebol_client.py` e o workflow de atualização diária |
+
+   - **Bzzoiro**: registre-se em [sports.bzzoiro.com/register](https://sports.bzzoiro.com/register/)
+     e copie a chave (o plano gratuito retorna o consenso multi-bookmaker).
+     Documentação: [sports.bzzoiro.com/docs](https://sports.bzzoiro.com/docs).
+   - **API Futebol**: crie uma conta em [api-futebol.com.br](https://www.api-futebol.com.br/)
+     e gere a chave no painel. Documentação:
+     [api-futebol.com.br/documentacao](https://www.api-futebol.com.br/documentacao).
+
+### Rate Limits e Fallback
+
+- A **API Futebol** limita a **10 requisições/minuto**. O cliente implementa
+  `time.sleep(6)` entre chamadas, retries com backoff exponencial e **cache em
+  disco** (`data/raw/partidas_estatisticas_<id>.json`), para nunca repetir uma
+  chamada desnecessariamente.
+- A **Bzzoiro** trata rate limit (HTTP 429 com `Retry-After`) e erros de
+  conexão; as respostas de odds são cacheadas por 6 horas
+  (`data/raw/odds_<event_id>.json`).
+- **Sem chave, sem internet ou diante de falhas persistentes**, o pipeline
+  **não quebra**: os clientes usam as bases de exemplo de `data/examples/`
+  (geradas deterministicamente por
+  [`src/generate_example_data.py`](src/generate_example_data.py)), e o
+  dashboard/notebook funcionam normalmente. A cobertura real (quais jogos têm
+  odds e estatísticas e quais não têm) é reportada na saída do pipeline.
+
+### Metodologia de Análise
+
+**Arbitragem** (ver [`notebooks/05_analise_arbitragem_odds.ipynb`](notebooks/05_analise_arbitragem_odds.ipynb)):
+
+1. **Perfil do árbitro** — média por jogo de faltas, cartões (amarelos e
+   vermelhos) e gols;
+2. **Grupos de rigor** — partidas agrupadas em tercis pela média de faltas do
+   árbitro (`Permissivo`, `Moderado`, `Rigoroso`);
+3. **ANOVA de uma via** — testa se a média de gols difere entre os grupos de
+   rigor (H₀: médias iguais);
+4. **Correlação de Pearson** — entre faltas × gols, cartões × gols e posse ×
+   gols (por partida), e entre faltas do time e aproveitamento de pontos.
+
+**Odds × modelo**:
+
+1. **Probabilidades implícitas** — `1/odd` por resultado, normalizadas para
+   somar 100% (remove a margem/overround da casa);
+2. **Comparação** — dispersão `P(modelo)` × `P(mercado)` por partida;
+3. **Métricas** — **acurácia** (a classe mais provável acertou o resultado?) e
+   **Brier Score** multiclasse (menor é melhor);
+4. **Combinação inteligente** — quando o mercado diverge fortemente do modelo
+   (`|ΔP| > limiar`, padrão 8 p.p.), usa-se a odd (o mercado é tratado como
+   portador de informação extra — lesões, escalações); caso contrário, usa-se
+   o modelo. O limiar é ajustável no dashboard.
+
+### Insights Gerados (base de exemplo atual)
+
+> Os números abaixo vêm da base de exemplo de `data/examples/` (48 partidas,
+> gerada deterministicamente — os efeitos da arbitragem são amplificados nela
+> para fins de ilustração metodológica).
+
+- **Arbitragem influencia os gols.** A ANOVA mostra diferença significativa
+  entre os grupos de rigor (F = 4.55, **p = 0.016**): jogos de árbitros
+  **permissivos têm em média 2.78 gols**, contra **1.15 dos rigorosos**
+  (média da competição: 2.04). A correlação faltas × gols é negativa e
+  significativa (r = -0.40, p = 0.005).
+  *Ex.: Wilmar Roldán apita jogos com 15.4 faltas em média (vs. 19.7 da
+  competição) e 2.60 gols/jogo; Piero Maza, 24.9 faltas e 1.29 gols/jogo —
+  indício de que árbitros mais permissivos geram jogos com mais gols.*
+- **As odds melhoram o modelo.** O mercado (acurácia **58.3%**) supera o
+  modelo de Poisson puro (**47.9%**). A combinação inteligente modelo + odds
+  atinge **60.4%** de acurácia — **+12.5 p.p.** sobre o modelo puro — e o
+  menor Brier Score (**0.541** vs. 0.616 do modelo e 0.550 do mercado).
+- **Agressividade × aproveitamento.** Times que cometem mais faltas têm, nesta
+  amostra, aproveitamento **menor** (r = -0.50 entre faltas do time e % de
+  pontos conquistados); cartões × gols não mostrou correlação significativa.
+
+### Gráficos de Exemplo
+
+<p align="center">
+  <img src="docs/images/arbitragem_gols_rigor.png" alt="Gols por grupo de rigor da arbitragem" width="46%">
+  <img src="docs/images/faltas_gols.png" alt="Faltas × gols por partida" width="46%">
+</p>
+<p align="center">
+  <img src="docs/images/acuracia_modelo_odds.png" alt="Acurácia: modelo vs odds vs combinação" width="70%">
+</p>
+
+Os gráficos são gerados a partir das funções de análise de
+[`src/preprocessing.py`](src/preprocessing.py) e reproduzidos interativamente
+nas páginas do dashboard.
 
 ---
 
@@ -169,18 +312,31 @@ Com base nos dados atuais e na análise estatística preliminar, as probabilidad
    pip install -r requirements.txt
    ```
 
-4. **Execute o pipeline completo**
+4. **Configure as chaves de API (opcional)**
+   ```bash
+   cp .env.example .env
+   # preencha BSD_API e API_FUTEBOL_KEY — sem elas, o projeto usa
+   # as bases de exemplo de data/examples/ (tudo continua funcionando)
+   ```
+
+5. **Execute o pipeline completo**
    ```bash
    python src/pipeline.py
    ```
    Isso irá:
-   - Baixar os dados atualizados (se configurado)
+   - Baixar os dados atualizados (scraper + API Futebol + Bzzoiro, se configurado)
+   - Coletar estatísticas detalhadas (faltas, cartões, posse, passes,
+     finalizações e arbitragem) — com o rate limit de 10 req/min respeitado
+   - Coletar as odds 1X2 e calcular as probabilidades implícitas
    - Processar e limpar os dados
    - Treinar o modelo
    - Gerar as previsões para as quartas
    - Salvar os resultados em `outputs/`
 
-5. **Abra o dashboard interativo (Streamlit)**
+   > Flags úteis: `--skip-scraping`, `--skip-training`, `--skip-stats`,
+   > `--skip-odds`.
+
+6. **Abra o dashboard interativo (Streamlit)**
    ```bash
    streamlit run app.py
    ```
@@ -193,23 +349,35 @@ Com base nos dados atuais e na análise estatística preliminar, as probabilidad
      ambos marcam, clean sheet);
    - 🎲 **Monte Carlo**: simulação do mata-mata (quartas → título) com jogos de
      ida e volta e disputa de pênaltis;
+   - 🟨 **Arbitragem e Estatísticas** (`pages/5_Arbitragem.py`): perfil por
+     árbitro, top 10 por faltas, dispersão faltas × gols, boxplot de cartões
+     (com filtro por país), radar de comparação entre dois árbitros, testes
+     estatísticos (ANOVA e Pearson) e tabela ordenável;
+   - 📊 **Odds e Probabilidades de Mercado** (`pages/6_Odds.py`): comparação
+     modelo × odds lado a lado, indicador de quem acertou nas divergências,
+     gráfico de diferença por partida, combinação inteligente modelo + odds
+     (com limiar ajustável) e métricas de acurácia/Brier Score;
    - ⚙️ **Parâmetros ao vivo**: vantagem de mando de campo e truncamento da
      Poisson ajustáveis na barra lateral.
 
    > Se os CSVs de `data/raw/` não existirem, o app executa o scraper
    > automaticamente para gerar a base de exemplo.
 
-6. **Explore os notebooks**
+7. **Explore os notebooks**
    ```bash
    jupyter notebook notebooks/
    ```
-   Abra `01_eda_libertadores.ipynb` para ver a análise exploratória detalhada.
+   Abra `01_eda_libertadores.ipynb` (análise exploratória),
+   `02_feature_engineering.ipynb` (features) e
+   `05_analise_arbitragem_odds.ipynb` (arbitragem e odds, já executado com os
+   resultados).
 
-7. **Execute os testes** (opcional)
+8. **Execute os testes** (opcional)
    ```bash
    python -m pytest tests/ -v
    ```
-   Valida o modelo de Poisson, a engenharia de features e a integração do pipeline.
+   Valida o modelo de Poisson, a engenharia de features, os clientes de API
+   (parsing e fallback offline) e a integração do pipeline.
 
 ---
 
@@ -218,31 +386,49 @@ Com base nos dados atuais e na análise estatística preliminar, as probabilidad
 ```
 libertadores2026/
 ├── app.py                 # 🖥️ Dashboard interativo (Streamlit)
+├── pages/
+│   ├── 5_Arbitragem.py    # 🟨 Análise de arbitragem e estatísticas
+│   └── 6_Odds.py          # 📊 Odds e probabilidades de mercado
 ├── .streamlit/
 │   └── config.toml        # Tema e configuração do dashboard
+├── .github/
+│   └── workflows/
+│       └── update_data.yml  # 🤖 Atualização diária de dados (CI/CD)
 ├── data/
-│   ├── raw/               # Dados brutos (CSVs)
+│   ├── raw/               # Dados brutos (CSVs e caches JSON das APIs)
 │   ├── processed/         # Dados limpos e com features
+│   ├── examples/          # Bases de exemplo (fallback sem API)
 │   └── external/          # Dados externos (rankings, etc.)
+├── docs/
+│   └── images/            # Gráficos de exemplo da documentação
 ├── notebooks/
 │   ├── 01_eda_libertadores.ipynb          # Análise exploratória
-│   └── 02_feature_engineering.ipynb       # Criação de features
+│   ├── 02_feature_engineering.ipynb       # Criação de features
+│   └── 05_analise_arbitragem_odds.ipynb   # Arbitragem e odds (executado)
 ├── src/
-│   ├── scraper.py         # Coleta de dados (Web Scraping/API)
-│   ├── preprocessing.py   # Limpeza e transformação
-│   ├── poisson.py         # Modelo de Poisson (placares e probabilidades 1X2)
-│   ├── model.py           # Treino e avaliação dos modelos
-│   ├── pipeline.py        # Orquestração do fluxo completo
-│   └── predict.py         # Geração de previsões
+│   ├── scraper.py             # Coleta de dados (Web Scraping)
+│   ├── api_futebol_client.py  # Cliente da API Futebol (estatísticas/arbitragem)
+│   ├── odds_client.py         # Cliente de odds da Bzzoiro Sports Data
+│   ├── generate_example_data.py  # Gerador determinístico das bases de exemplo
+│   ├── preprocessing.py       # Limpeza, transformação e análises (ANOVA, Brier…)
+│   ├── poisson.py             # Modelo de Poisson (placares e probabilidades 1X2)
+│   ├── model.py               # Treino e avaliação dos modelos
+│   ├── pipeline.py            # Orquestração do fluxo completo (6 etapas)
+│   ├── predict.py             # Geração de previsões
+│   └── dashboard_utils.py     # Utilitários compartilhados do dashboard
 ├── tests/
-│   ├── test_poisson.py        # Testes do modelo de Poisson
-│   ├── test_preprocessing.py  # Testes da engenharia de features
-│   └── test_model.py          # Testes de integração
+│   ├── test_poisson.py            # Testes do modelo de Poisson
+│   ├── test_preprocessing.py      # Testes da engenharia de features
+│   ├── test_model.py              # Testes de integração
+│   ├── test_api_futebol_client.py # Testes do cliente da API Futebol
+│   ├── test_odds_client.py        # Testes do cliente de odds
+│   └── test_generate_example_data.py  # Testes do gerador de exemplo
 ├── models/
 │   └── classifier.pkl     # Modelo treinado (salvo)
 ├── outputs/
 │   ├── quartas_previsao.csv   # Tabela com probabilidades
 │   └── charts/                # Gráficos gerados
+├── .env.example          # Modelo de variáveis de ambiente (BSD_API, API_FUTEBOL_KEY)
 ├── requirements.txt       # Dependências do projeto
 ├── .gitignore
 └── README.md              # Este arquivo
@@ -253,10 +439,12 @@ libertadores2026/
 ## 🚀 Próximos Passos (Melhorias Futuras)
 
 - [x] **Dashboard Interativo**: aplicativo **Streamlit** (`app.py`) com previsões, simulador de confrontos e Monte Carlo do mata-mata.
-- [ ] **Dados de Odds**: Incluir odds de casas de apostas como variável externa (feature).
-- [ ] **Automação**: Agendar a execução diária para atualizar dados e previsões.
+- [x] **Dados de Odds**: odds 1X2 da **Bzzoiro Sports Data** com probabilidades implícitas e comparação com o modelo (`pages/6_Odds.py`).
+- [x] **Análise de Arbitragem**: estatísticas detalhadas da **API Futebol** (faltas, cartões, posse, passes, finalizações) com testes estatísticos (`pages/5_Arbitragem.py`).
+- [x] **Automação**: workflow do GitHub Actions (`.github/workflows/update_data.yml`) executando o pipeline diariamente com commit automático.
 - [ ] **Mais Features**: Adicionar estatísticas de jogadores (gols, assistências, cartões).
 - [ ] **Modelo de Redes Neurais**: Experimentar LSTM para séries temporais de desempenho.
+- [ ] **Validação out-of-sample**: calibrar o limiar da combinação modelo + odds com dados reais de edições anteriores.
 
 ---
 
