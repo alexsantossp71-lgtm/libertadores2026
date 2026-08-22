@@ -37,7 +37,7 @@ O projeto foi desenvolvido como parte do meu portfólio para demonstrar habilida
 
 O dataset consolidado é **`data/historical/partidas_libertadores.csv`** (2.227 partidas,
 2.226 com placar, 15 edições), reconstruído com validação de integridade
-(`sum(GP) == sum(GC)` por tabela, duplicatas, pernas dos confrontos)::
+(`sum(GP) == sum(GC)` por tabela, duplicatas, pernas dos confrontos):
 
     python src/real_data.py build      # reconstrói e valida o dataset
     python src/real_data.py tabelas    # gera data/raw/*.csv do dashboard
@@ -295,8 +295,6 @@ Com base nos dados atuais e na análise estatística preliminar, as probabilidad
 
 | Jogo | Mandante | Visitante | Prob. Mandante | Prob. Empate | Prob. Visitante | Placar Mais Provável |
 |------|----------|-----------|----------------|--------------|-----------------|----------------------|
-| QF | Mandante | Visitante | P(mandante) | P(empate) | P(visitante) | Placar provável |
-|----|----------|-----------|-------------|-----------|--------------|-----------------|
 | QF1 | Fluminense (BRA) | Platense (ARG) | **41%** | 27% | 32% | 1x1 |
 | QF2 | Estudiantes (ARG) | Corinthians (BRA) | 27% | 37% | **36%** | 0x0 |
 | QF3 | Palmeiras (BRA) | LDU (ECU) | **50%** | 28% | 22% | 1x0 |
@@ -422,9 +420,6 @@ libertadores2026/
 │   └── 6_Odds.py          # 📊 Odds e probabilidades de mercado
 ├── .streamlit/
 │   └── config.toml        # Tema e configuração do dashboard
-├── .github/
-│   └── workflows/
-│       └── update_data.yml  # 🤖 Atualização diária de dados (CI/CD)
 ├── data/
 │   ├── raw/               # Dados brutos (CSVs e caches JSON das APIs)
 │   ├── processed/         # Dados limpos e com features
