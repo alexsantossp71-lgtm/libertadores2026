@@ -162,7 +162,11 @@ class LibertadoresModel:
         
         return results
     
-    def fit_poisson(self, grupos_df: pd.DataFrame) -> PoissonScoreModel:
+    def fit_poisson(
+        self,
+        grupos_df: pd.DataFrame,
+        aplicar_elenco: bool = True,
+    ) -> PoissonScoreModel:
         """Ajusta o modelo de Poisson com os dados da fase de grupos.
 
         Parameters
@@ -170,6 +174,9 @@ class LibertadoresModel:
         grupos_df : pd.DataFrame
             Tabela agregada da fase de grupos (colunas ``Time``, ``J``, ``GP``,
             ``GC``), tipicamente retornada por ``Preprocessor.create_features``.
+        aplicar_elenco : bool
+            Se True, mistura índices FBref (poder de fogo, pressão, química)
+            e a forma recente dos últimos jogos nas forças de ataque/defesa.
 
         Returns
         -------
@@ -177,6 +184,14 @@ class LibertadoresModel:
             O modelo de Poisson ajustado.
         """
         self.poisson.fit(grupos_df)
+        if aplicar_elenco:
+            try:
+                from elenco_analysis import aplicar_elenco_ao_poisson, analisar_elencos, forma_recente
+
+                elencos = analisar_elencos()
+                aplicar_elenco_ao_poisson(self.poisson, elencos, forma=forma_recente())
+            except FileNotFoundError:
+                pass
         return self.poisson
 
     def predict_match_poisson(

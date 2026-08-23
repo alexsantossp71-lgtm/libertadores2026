@@ -69,6 +69,12 @@ def fit_model(home_advantage: float = 1.15, max_goals: int = 10) -> PoissonScore
     grupos_features, _, _ = load_grupos_features()
     model = PoissonScoreModel(home_advantage=home_advantage, max_goals=max_goals)
     model.fit(grupos_features)
+    try:
+        from elenco_analysis import analisar_elencos, aplicar_elenco_ao_poisson, forma_recente
+
+        aplicar_elenco_ao_poisson(model, analisar_elencos(), forma=forma_recente())
+    except FileNotFoundError:
+        pass
     return model
 
 

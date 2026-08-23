@@ -9,10 +9,12 @@ from .scraper import LibertadoresScraper
 from .preprocessing import Preprocessor
 from .model import LibertadoresModel
 from .predict import LibertadoresPredictor
+from .fbref_scraper import FBrefClient
 
 __all__ = [
     'LibertadoresScraper',
     'Preprocessor',
     'LibertadoresModel',
-    'LibertadoresPredictor'
+    'LibertadoresPredictor',
+    'FBrefClient',
 ]

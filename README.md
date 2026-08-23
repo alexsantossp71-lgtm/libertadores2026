@@ -30,8 +30,11 @@ O projeto foi desenvolvido como parte do meu portfólio para demonstrar habilida
   mata-mata), versionadas em `data/historical/openfootball/`
 - [ESPN](https://site.api.espn.com/apis/site/v2/sports/soccer/conmebol.libertadores/scoreboard) —
   placares recentes (playoffs de agosto/2026) e conferência cruzada
-- [FBref](https://fbref.com/en/comps/14/schedule/Copa-Libertadores-Scores-and-Fixtures) —
-  mata-mata 2026 e confrontos das quartas (evidência em `data/historical/fbref_mata_mata_2026.md`)
+- [FBref](https://fbref.com/en/comps/14/stats/Copa-Libertadores-Stats) —
+  **elencos e jogadores** (gols, assistências, finalizações, desarmes ganhos,
+  interceptações, faltas) via [`src/fbref_scraper.py`](src/fbref_scraper.py);
+  snapshot auditável em `data/historical/fbref/`. Calendário do mata-mata
+  2026 em `data/historical/fbref_mata_mata_2026.md`
 - [Bzzoiro Sports Data](https://sports.bzzoiro.com/) – **Odds 1X2** (consenso multi-bookmaker; requer chave)
 - [API Futebol](https://www.api-futebol.com.br/) – **Estatísticas detalhadas** (faltas, cartões, posse, passes, finalizações) e **arbitragem** (requer chave)
 
@@ -42,6 +45,7 @@ O dataset consolidado é **`data/historical/partidas_libertadores.csv`** (2.227 
     python src/real_data.py build      # reconstrói e valida o dataset
     python src/real_data.py tabelas    # gera data/raw/*.csv do dashboard
     python src/real_data.py validate   # roda só a validação
+    python src/fbref_scraper.py scrape --season 2026   # elencos/jogadores FBref
 
 **Sem chaves de API, nenhuma base sintética é usada**: as páginas de arbitragem/odds
 exigem `API_FUTEBOL_KEY`/`BSD_API` (ou `ALLOW_EXAMPLE_DATA=1` explícito, só para desenvolvimento).
@@ -68,8 +72,15 @@ data/
 │   ├── confrontos_quartas.csv
 │   ├── partidas_estatisticas_<id>.json   # cache da API Futebol
 │   └── odds_<event_id>.json              # cache da Bzzoiro
+├── historical/fbref/
+│   ├── elencos_2026.csv           # Snapshot real (32 times, 22/08/2026)
+│   └── PROVENIENCIA.md
 ├── processed/
 │   ├── features_libertadores.csv                  # Dados com engenharia de features
+│   ├── fbref_elencos.csv / fbref_jogadores.csv    # Saída da raspagem FBref
+│   ├── fbref_libertadores.sqlite                  # temporada → time → jogador
+│   ├── analise_elencos.csv / forma_recente.csv     # Índices de elenco + últimos 5 jogos
+│   ├── analise_confrontos_elenco.csv              # Quartas com/sem ajuste de elenco
 │   ├── libertadores_estatisticas_detalhadas.csv   # Estatísticas por partida (API Futebol)
 │   └── libertadores_odds.csv                      # Odds 1X2 processadas (Bzzoiro)
 ├── examples/          # Bases de exemplo (versionadas — fallback sem API)
@@ -92,6 +103,7 @@ metodologia de análise que as utiliza.
 |-------|---------------|--------|---------------|
 | [Bzzoiro Sports Data](https://sports.bzzoiro.com/docs) | Odds decimais 1X2 (consenso multi-bookmaker) | [`src/odds_client.py`](src/odds_client.py) | `data/processed/libertadores_odds.csv` |
 | [API Futebol](https://www.api-futebol.com.br/) | Faltas, cartões, posse, passes, finalizações, escanteios, impedimentos, defesas e árbitro | [`src/api_futebol_client.py`](src/api_futebol_client.py) | `data/processed/libertadores_estatisticas_detalhadas.csv` |
+| [FBref](https://fbref.com/en/comps/14/stats/Copa-Libertadores-Stats) | Elencos e jogadores (Standard, Shooting, Misc, Playing Time, Keepers) | [`src/fbref_scraper.py`](src/fbref_scraper.py) | `data/processed/fbref_*.csv` + SQLite |
 
 **Colunas do CSV de estatísticas (por partida):** `partida_id`, `data`, `fase`,
 `rodada`, `grupo`, `mandante`, `visitante`, `gols_mandante`, `gols_visitante`,
@@ -282,6 +294,22 @@ provável. A implementação está em [`src/poisson.py`](src/poisson.py).
 > Referências conceituais: Maher (1982) e Dixon & Coles (1997), na forma
 > multiplicativa simplificada aplicável a estatísticas agregadas da fase de grupos.
 
+### Ajuste por análise de elenco
+
+Depois do `fit` clássico, [`src/elenco_analysis.py`](src/elenco_analysis.py)
+multiplica ataque e defesa por índices reais:
+
+| Sinal | Fonte | Efeito no Poisson |
+|-------|-------|-------------------|
+| Poder de fogo | 0.4·gols/90 + 0.3·assist/90 + 0.2·SoT/90 + 0.1·chutes/90 | sobe/desce `ataque` |
+| Pressão defensiva | (desarmes ganhos + interceptações) / 90 | reduz `defesa` (gols sofridos) |
+| Química | `11 / n_jogadores` (proxy de repetição de XI) | leve bônus de organização |
+| Disciplina | cartões + faltas / 90 | time sujo sofre um pouco mais |
+| Forma recente | últimos 5 jogos (openfootball) | mistura 20% na taxa observada |
+
+O CSV `outputs/quartas_previsao.csv` guarda o cenário-base e o cenário com
+elenco (`Prob_*_base`, `Delta_xG_*`, `Nota_Elenco`).
+
 ### Métricas de Avaliação
 - **Acurácia** e **Matriz de Confusão** para classificação.
 - **Erro Absoluto Médio (MAE)** para previsão de gols.
@@ -300,9 +328,10 @@ Com base nos dados atuais e na análise estatística preliminar, as probabilidad
 | QF3 | Palmeiras (BRA) | LDU (ECU) | **50%** | 28% | 22% | 1x0 |
 | QF4 | Flamengo (BRA) | Tolima ou IDV | — | — | — | a definir (volta em 25/08) |
 
-*Previsões do modelo de Poisson ajustado aos dados reais da fase de grupos 2026
-(32 times; média real de 1,17 gols/time/jogo). QF4 aguarda o vencedor de
-Tolima × Independiente del Valle (25/08).*
+*Previsões do Poisson da fase de grupos **ajustado pelos índices de elenco**
+(FBref + forma recente). QF4 aguarda o vencedor de Tolima × Independiente
+del Valle (25/08). Rode `python src/predict.py` para o CSV com cenário-base
+e cenário-elenco lado a lado.*
 
 A aba **🏆 Mata-mata até o título** do dashboard mostra o chaveamento completo em
 cards por fase (quartas reais → semis e final previstas → **campeão previsto com
@@ -353,7 +382,8 @@ Independiente del Valle, Palmeiras e Corinthians.*
    python src/pipeline.py
    ```
    Isso irá:
-   - Baixar os dados atualizados (scraper + API Futebol + Bzzoiro, se configurado)
+   - Baixar os dados atualizados (scraper + FBref + API Futebol + Bzzoiro, se configurado)
+   - Raspar elencos e jogadores da FBref (com fallback para o snapshot histórico)
    - Coletar estatísticas detalhadas (faltas, cartões, posse, passes,
      finalizações e arbitragem) — com o rate limit de 10 req/min respeitado
    - Coletar as odds 1X2 e calcular as probabilidades implícitas
@@ -362,8 +392,8 @@ Independiente del Valle, Palmeiras e Corinthians.*
    - Gerar as previsões para as quartas
    - Salvar os resultados em `outputs/`
 
-   > Flags úteis: `--skip-scraping`, `--skip-training`, `--skip-stats`,
-   > `--skip-odds`.
+   > Flags úteis: `--skip-scraping`, `--skip-fbref`, `--skip-training`,
+   > `--skip-stats`, `--skip-odds`.
 
 6. **Abra o dashboard interativo (Streamlit)**
    ```bash
@@ -397,7 +427,8 @@ Independiente del Valle, Palmeiras e Corinthians.*
    jupyter notebook notebooks/
    ```
    Abra `01_eda_libertadores.ipynb` (análise exploratória),
-   `02_feature_engineering.ipynb` (features) e
+   `02_feature_engineering.ipynb` (features),
+   `03_fbref_elencos.ipynb` (índices de elenco da FBref) e
    `05_analise_arbitragem_odds.ipynb` (arbitragem e odds, já executado com os
    resultados).
 
@@ -417,7 +448,8 @@ libertadores2026/
 ├── app.py                 # 🖥️ Dashboard interativo (Streamlit)
 ├── pages/
 │   ├── 5_Arbitragem.py    # 🟨 Análise de arbitragem e estatísticas
-│   └── 6_Odds.py          # 📊 Odds e probabilidades de mercado
+│   ├── 6_Odds.py          # 📊 Odds e probabilidades de mercado
+│   └── 7_Elencos.py       # 👕 Análise de elencos (FBref + forma)
 ├── .streamlit/
 │   └── config.toml        # Tema e configuração do dashboard
 ├── data/
@@ -430,10 +462,14 @@ libertadores2026/
 ├── notebooks/
 │   ├── 01_eda_libertadores.ipynb          # Análise exploratória
 │   ├── 02_feature_engineering.ipynb       # Criação de features
+│   ├── 03_fbref_elencos.ipynb             # Elencos e índices FBref
 │   └── 05_analise_arbitragem_odds.ipynb   # Arbitragem e odds (executado)
 ├── src/
 │   ├── real_data.py           # ★ Dados reais 2012–2026 (parser openfootball + suplementos)
 │   ├── scraper.py             # Materializa as tabelas do dashboard (dados reais)
+│   ├── fbref_scraper.py       # Raspagem FBref (elencos/jogadores → CSV + SQLite)
+│   ├── fbref_features.py      # Índices de força ofensiva / pressão defensiva
+│   ├── elenco_analysis.py     # Análise de elenco + ajuste do Poisson
 │   ├── api_futebol_client.py  # Cliente da API Futebol (estatísticas/arbitragem)
 │   ├── odds_client.py         # Cliente de odds da Bzzoiro Sports Data
 │   ├── generate_example_data.py  # Gerador determinístico das bases de exemplo
@@ -449,6 +485,8 @@ libertadores2026/
 │   ├── test_model.py              # Testes de integração
 │   ├── test_api_futebol_client.py # Testes do cliente da API Futebol
 │   ├── test_odds_client.py        # Testes do cliente de odds
+│   ├── test_fbref_scraper.py      # Testes do parser/fallback FBref
+│   ├── test_elenco_analysis.py    # Testes da análise de elenco / Poisson
 │   └── test_generate_example_data.py  # Testes do gerador de exemplo
 ├── models/                # Modelos treinados (gitignored, gerados localmente)
 ├── outputs/
@@ -468,7 +506,8 @@ libertadores2026/
 - [x] **Dados de Odds**: odds 1X2 da **Bzzoiro Sports Data** com probabilidades implícitas e comparação com o modelo (`pages/6_Odds.py`).
 - [x] **Análise de Arbitragem**: estatísticas detalhadas da **API Futebol** (faltas, cartões, posse, passes, finalizações) com testes estatísticos (`pages/5_Arbitragem.py`).
 - [ ] **Automação**: workflow do GitHub Actions executando o pipeline diariamente com commit automático (ainda não criado).
-- [ ] **Mais Features**: Adicionar estatísticas de jogadores (gols, assistências, cartões).
+- [x] **Estatísticas de elencos/jogadores (FBref)**: raspagem educada + snapshot real 2026 + índices de força ofensiva / pressão defensiva (`src/fbref_scraper.py`, `src/fbref_features.py`).
+- [ ] **Passing network / heatmap**: exige evento por partida (StatsBomb/Sofascore) — a FBref da Libertadores não publica isso.
 - [ ] **Modelo de Redes Neurais**: Experimentar LSTM para séries temporais de desempenho.
 - [ ] **Validação out-of-sample**: calibrar o limiar da combinação modelo + odds com dados reais de edições anteriores.
 

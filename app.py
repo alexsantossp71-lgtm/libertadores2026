@@ -157,9 +157,15 @@ def load_data() -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
 def fit_model(
     grupos_features: pd.DataFrame, home_advantage: float, max_goals: int
 ) -> PoissonScoreModel:
-    """Ajusta o modelo de Poisson com os parâmetros escolhidos."""
+    """Ajusta o Poisson e mistura os índices de elenco (FBref + forma)."""
     model = PoissonScoreModel(home_advantage=home_advantage, max_goals=max_goals)
     model.fit(grupos_features)
+    try:
+        from elenco_analysis import analisar_elencos, aplicar_elenco_ao_poisson, forma_recente
+
+        aplicar_elenco_ao_poisson(model, analisar_elencos(), forma=forma_recente())
+    except FileNotFoundError:
+        pass
     return model
 
 
@@ -297,6 +303,12 @@ def monte_carlo_bracket(
     """Simula quartas → semis → final N vezes e retorna probabilidades por fase."""
     model = PoissonScoreModel(home_advantage=home_advantage, max_goals=max_goals)
     model.fit(grupos_features)
+    try:
+        from elenco_analysis import analisar_elencos, aplicar_elenco_ao_poisson, forma_recente
+
+        aplicar_elenco_ao_poisson(model, analisar_elencos(), forma=forma_recente())
+    except FileNotFoundError:
+        pass
 
     rng = np.random.default_rng(seed)
     teams = sorted({t for pair in pairs for t in pair})
@@ -349,6 +361,11 @@ with st.sidebar:
         "pages/6_Odds.py",
         label="📊 Odds e Probabilidades de Mercado",
         icon="📊",
+    )
+    st.page_link(
+        "pages/7_Elencos.py",
+        label="👕 Análise de Elencos",
+        icon="👕",
     )
     st.divider()
 
@@ -1003,6 +1020,8 @@ soma dos triângulos e da diagonal da matriz de placares.
             "max_goals": model.max_goals,
             "league_avg_gols_por_jogo": round(model.league_avg, 4),
             "times": len(model.teams),
+            "elenco_aplicado": bool(getattr(model, "elenco_applied", False)),
+            "times_com_ajuste_elenco": len(getattr(model, "elenco_multipliers", {})),
         }
     )
 
@@ -1011,6 +1030,8 @@ soma dos triângulos e da diagonal da matriz de placares.
         "src/real_data.py      → dados reais 2012–2026 (openfootball + ESPN/FBref)\n"
         "src/scraper.py        → materializa as tabelas do dashboard a partir deles\n"
         "src/preprocessing.py  → engenharia de features\n"
+        "src/fbref_scraper.py  → raspagem de elencos/jogadores\n"
+        "src/elenco_analysis.py→ índices de elenco + ajuste do Poisson\n"
         "src/poisson.py        → modelo de Poisson (usado por este app)\n"
         "src/model.py          → XGBoost + Poisson\n"
         "src/predict.py        → geração de previsões em CSV\n"
@@ -1022,10 +1043,11 @@ soma dos triângulos e da diagonal da matriz de placares.
     st.markdown(
         """
         <div class="disclaimer">
-        ⚠️ <b>Aviso:</b> as previsões são estatísticas e baseadas em dados <b>reais</b>
-        da fase de grupos 2026 (32 times · openfootball + ESPN/FBref). Lesões,
-        suspensões, calendário, decisões táticas e mercado de transferências
-        não são considerados. Uso educacional — não é recomendação de aposta.
+        ⚠️ <b>Aviso:</b> as previsões misturam o Poisson da fase de grupos com
+        índices reais de elenco da FBref (finalizações, desarmes, interceptações,
+        rotação, cartões) e a forma dos últimos 5 jogos. Lesões pontuais e o XI
+        do dia só entram quando a tabela de jogadores estiver raspada.
+        Uso educacional — não é recomendação de aposta.
         </div>
         """,
         unsafe_allow_html=True,

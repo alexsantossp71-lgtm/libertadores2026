@@ -112,8 +112,11 @@ Thumbs.db
 # Data files (keep structure, ignore large data)
 data/raw/*.csv
 data/raw/*.json
+data/raw/fbref/
 data/processed/*.csv
 data/processed/*.json
+data/processed/*.sqlite
+data/processed/*.db
 data/external/*.csv
 
 # Models (ignore trained models)
