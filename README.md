@@ -324,22 +324,21 @@ Com base nos dados atuais e na análise estatística preliminar, as probabilidad
 
 | Jogo | Mandante | Visitante | Prob. Mandante | Prob. Empate | Prob. Visitante | Placar Mais Provável |
 |------|----------|-----------|----------------|--------------|-----------------|----------------------|
-| QF1 | Fluminense (BRA) | Platense (ARG) | **41%** | 27% | 32% | 1x1 |
-| QF2 | Estudiantes (ARG) | Corinthians (BRA) | 27% | 37% | **36%** | 0x0 |
-| QF3 | Palmeiras (BRA) | LDU (ECU) | **50%** | 28% | 22% | 1x0 |
-| QF4 | Flamengo (BRA) | Tolima ou IDV | — | — | — | a definir (volta em 25/08) |
+| QF1 | Estudiantes (ARG) | Corinthians (BRA) | 27% | 37% | **36%** | 0x0 |
+| QF2 | Palmeiras (BRA) | LDU (ECU) | **50%** | 28% | 22% | 1x0 |
+| QF3 | Flamengo (BRA) | Tolima ou IDV | — | — | — | a definir (volta em 25/08) |
+| QF4 | Fluminense (BRA) | Platense (ARG) | **41%** | 27% | 32% | 1x1 |
 
 *Previsões do Poisson da fase de grupos **ajustado pelos índices de elenco**
-(FBref + forma recente). QF4 aguarda o vencedor de Tolima × Independiente
+(FBref + forma recente). QF3 aguarda o vencedor de Tolima × Independiente
 del Valle (25/08). Rode `python src/predict.py` para o CSV com cenário-base
 e cenário-elenco lado a lado.*
 
 A aba **🏆 Mata-mata até o título** do dashboard mostra o chaveamento completo em
 cards por fase (quartas reais → semis e final previstas → **campeão previsto com
 % de título**), calculando confrontos de ida e volta por convolução das matrizes
-de Poisson (pênaltis 50/50) e a final em campo neutro. Na data desta atualização,
-o caminho do favorito aponta **Flamengo** (~52% de título) passando por
-Independiente del Valle, Palmeiras e Corinthians.*
+de Poisson (pênaltis 50/50) e a final em campo neutro. O caminho é calculado
+respeitando o chaveamento oficial: **QF1 × QF2** e **QF3 × QF4** nas semifinais.*
 
 > ⚠️ **Observação**: Estas previsões são baseadas em dados estatísticos e não consideram fatores imprevistos como lesões, suspensões ou mudanças táticas de última hora. O modelo será atualizado conforme novos dados forem disponibilizados.
 

@@ -9,6 +9,7 @@ import pytest
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 from real_data import (  # noqa: E402
+    QUARTAS_PATH,
     _parse_tail,
     knockout_results,
     load_partidas,
@@ -72,6 +73,21 @@ def test_oitavas_2026_reais(partidas):
     # Tolima x IDV: volta em 25/08 — não pode ter vencedor declarado
     pendente = oitavas[oitavas.apply(lambda r: "Tolima" in (r["Time1"], r["Time2"]), axis=1)]
     assert pendente["Vencedor"].iloc[0] == "(em andamento)"
+
+
+def test_chaveamento_das_quartas_2026():
+    quartas = pd.read_csv(QUARTAS_PATH).set_index("Confronto")
+
+    assert list(quartas.index) == ["QF1", "QF2", "QF3", "QF4"]
+    assert quartas.loc["QF1", ["Mandante", "Visitante"]].tolist() == [
+        "Estudiantes", "Corinthians"
+    ]
+    assert quartas.loc["QF2", ["Mandante", "Visitante"]].tolist() == ["Palmeiras", "LDU"]
+    assert quartas.loc["QF3", "Mandante"] == "Flamengo"
+    assert "A DEFINIR" in quartas.loc["QF3", "Visitante"]
+    assert quartas.loc["QF4", ["Mandante", "Visitante"]].tolist() == [
+        "Fluminense", "Platense"
+    ]
 
 
 def test_suplemento_trocado_tolima(partidas):
