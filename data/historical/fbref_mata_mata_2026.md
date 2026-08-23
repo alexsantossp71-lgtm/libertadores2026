@@ -34,11 +34,11 @@ O openfootball registrou essa troca de forma incorreta — corrigido via
 | 2026-08-20 | Corinthians | 1–0 | Rosario Central | 1–0 | Corinthians |
 | 2026-08-25 | Independiente del Valle | — | Deportes Tolima | 0–1 (parcial) | a disputar |
 
-## Quartas de final (sorteadas; 4º confronto aguarda Tolima × IDV)
+## Quartas de final (sorteadas; QF3 aguarda Tolima × IDV)
 
-| Confronto | Ida | Volta |
-|-----------|-----|-------|
-| Fluminense × Platense | 2026-09-09 (Maracanã) | 2026-09-16 |
-| Estudiantes × Corinthians | 2026-09-09 | 2026-09-16 |
-| Palmeiras × LDU de Quito | 2026-09-09 | 2026-09-16 |
-| Flamengo × (Tolima ou IDV) | a definir | a definir |
+| Chave | Confronto | Ida | Volta |
+|-------|-----------|-----|-------|
+| QF1 | Estudiantes × Corinthians | 2026-09-09 | 2026-09-16 |
+| QF2 | Palmeiras × LDU de Quito | 2026-09-09 | 2026-09-16 |
+| QF3 | Flamengo × (Tolima ou IDV) | a definir | a definir |
+| QF4 | Fluminense × Platense | 2026-09-09 (Maracanã) | 2026-09-16 |

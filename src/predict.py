@@ -29,9 +29,9 @@ from preprocessing import Preprocessor
 OUTPUT_DIR = Path(__file__).parent.parent / "outputs"
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
-# Confrontos das quartas ainda sem adversário definido viram cenários.
-QF4_CANDIDATOS = ("Tolima", "Independiente del Valle")
-QF4_PAIS = {"Tolima": "COL", "Independiente del Valle": "ECU"}
+# O QF3 ainda sem adversário definido vira dois cenários.
+QF3_CANDIDATOS = ("Tolima", "Independiente del Valle")
+QF3_PAIS = {"Tolima": "COL", "Independiente del Valle": "ECU"}
 
 
 class LibertadoresPredictor:
@@ -43,7 +43,7 @@ class LibertadoresPredictor:
         self.elencos: pd.DataFrame = pd.DataFrame()
 
     def _resolver_quartas(self, quartas: pd.DataFrame, times_validos: set) -> pd.DataFrame:
-        """Expande o QF4 indefinido nos dois cenários reais (Tolima / IDV)."""
+        """Expande o QF3 indefinido nos dois cenários reais (Tolima / IDV)."""
         rows = []
         for _, row in quartas.iterrows():
             mandante = row["Mandante"]
@@ -54,12 +54,12 @@ class LibertadoresPredictor:
                 rows.append(rec)
                 continue
             if mandante in times_validos and "A DEFINIR" in str(visitante).upper():
-                for cand in QF4_CANDIDATOS:
+                for cand in QF3_CANDIDATOS:
                     if cand not in times_validos:
                         continue
                     rec = row.to_dict()
                     rec["Visitante"] = cand
-                    rec["Pais_Visitante"] = QF4_PAIS.get(cand, rec.get("Pais_Visitante"))
+                    rec["Pais_Visitante"] = QF3_PAIS.get(cand, rec.get("Pais_Visitante"))
                     rec["Cenario"] = f"se {cand}"
                     rec["Confronto"] = f"{row['Confronto']} ({cand})"
                     rows.append(rec)

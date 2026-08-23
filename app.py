@@ -594,7 +594,7 @@ with tab_mata:
         "campo neutro. Emparelhamento das semis na ordem do chaveamento (QF1×QF2, QF3×QF4)."
     )
 
-    # --- 4º confronto ainda em aberto (volta Tolima × IDV em 25/08) --------
+    # --- QF3 ainda em aberto (volta Tolima × IDV em 25/08) -----------------
     qf_rows = []
     pendencia = None
     for _, row in quartas.iterrows():
@@ -611,7 +611,7 @@ with tab_mata:
         col_sel, col_info = st.columns([1, 2.2])
         with col_sel:
             cenario_lbl = st.selectbox(
-                "4º confronto — adversário do Flamengo (volta Tolima × IDV em 25/08):",
+                "QF3 — adversário do Flamengo (volta Tolima × IDV em 25/08):",
                 opcoes, index=0,
             )
         with col_info:

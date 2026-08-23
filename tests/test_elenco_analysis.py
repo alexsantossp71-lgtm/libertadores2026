@@ -108,20 +108,20 @@ def test_apply_elenco_multipliers_idempotente():
     assert model.attack["A"] == pytest.approx(att1)
 
 
-def test_predictor_resolve_qf4_cenarios():
+def test_predictor_resolve_qf3_cenarios():
     from predict import LibertadoresPredictor
 
     quartas = pd.DataFrame([
-        {"Confronto": "QF1", "Mandante": "Fluminense", "Visitante": "Platense"},
-        {"Confronto": "QF4", "Mandante": "Flamengo",
+        {"Confronto": "QF3", "Mandante": "Flamengo",
          "Visitante": "A DEFINIR (vencedor de Tolima x Independiente del Valle)"},
+        {"Confronto": "QF4", "Mandante": "Fluminense", "Visitante": "Platense"},
     ])
     pred = LibertadoresPredictor()
     out = pred._resolver_quartas(
         quartas, {"Fluminense", "Platense", "Flamengo", "Tolima", "Independiente del Valle"}
     )
     assert len(out) == 3
-    assert set(out.loc[out["Confronto"].str.contains("QF4"), "Visitante"]) == {
+    assert set(out.loc[out["Confronto"].str.contains("QF3"), "Visitante"]) == {
         "Tolima", "Independiente del Valle"
     }
 
