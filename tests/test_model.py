@@ -69,3 +69,83 @@ def test_predict_without_fit_raises(grupos_df):
 
     with pytest.raises(RuntimeError):
         model.predict_match_poisson(match)
+
+
+@pytest.fixture
+def historia_csv(tmp_path):
+    """CSV sintético determinístico com as 3 classes representadas no treino.
+
+    ``Forte`` vence ``Fraco`` em todas as partidas dele (mandante e visitante);
+    partidas entre ``OutroA``/``OutroB`` terminam empatadas para fornecer a
+    classe ``empate`` (alvo 1) e garantir classes contíguas no split temporal.
+    O 1º jogo tem Forte visitante (Elo já diverge antes de qualquer partida em
+    que Forte seja mandante) e o último tem Forte mandante.
+    """
+    m, v, r = "mandante", "visitante", "empate"
+    specs = [
+        ("Fraco", "Forte", 0, 3, v),
+        ("Forte", "Fraco", 3, 0, m),
+        ("OutroA", "OutroB", 1, 1, r),
+        ("Forte", "Fraco", 3, 0, m),
+        ("Fraco", "Forte", 0, 3, v),
+        ("OutroA", "OutroB", 1, 1, r),
+        ("Forte", "Fraco", 3, 0, m),
+        ("Fraco", "Forte", 0, 3, v),
+        ("OutroA", "OutroB", 1, 1, r),
+        ("Forte", "Fraco", 3, 0, m),
+        ("Fraco", "Forte", 0, 3, v),
+        ("Forte", "Fraco", 3, 0, m),
+        ("Fraco", "Forte", 0, 3, v),
+        ("OutroA", "OutroB", 1, 1, r),
+        ("Forte", "Fraco", 3, 0, m),
+        ("Fraco", "Forte", 0, 3, v),
+        ("Forte", "Fraco", 3, 0, m),
+        ("Fraco", "Forte", 0, 3, v),
+        ("Forte", "Fraco", 3, 0, m),
+        ("Forte", "Fraco", 3, 0, m),
+    ]
+    rows = []
+    for i, (mand, vis, gols_m, gols_v, res) in enumerate(specs):
+        rows.append(
+            {
+                "data": pd.Timestamp("2024-01-01") + pd.Timedelta(days=i),
+                "mandante": mand,
+                "visitante": vis,
+                "pais_mandante": "BRA" if mand == "Forte" else "ECU",
+                "pais_visitante": "BRA" if vis == "Forte" else "COL",
+                "fase": "Group Stage",
+                "gols_mandante": gols_m,
+                "gols_visitante": gols_v,
+                "resultado": res,
+            }
+        )
+    df = pd.DataFrame(rows)
+    path = tmp_path / "hist.csv"
+    df.to_csv(path, index=False)
+    return path
+
+
+def test_classifier_learns_from_real_history(historia_csv):
+    """Sanidade do classificador XGBoost reescrito (features causais).
+
+    Com ``Forte`` vencendo sempre, as features devem refletir essa vantagem
+    (``Diff_Elo > 0`` e ``Ataque_M`` acima da média inicial da liga de 1.25)
+    e ``train()`` deve rodar com split temporal sem quebrar.
+    """
+    model = LibertadoresModel()
+    X, y = model.prepare_training_data(csv_path=str(historia_csv))
+
+    assert X.shape == (20, 10)
+    assert set(y).issubset({0, 1, 2})
+    assert len(model.feature_names) == 10
+
+    df = pd.read_csv(historia_csv, parse_dates=["data"])
+    for i, m in df.iterrows():
+        if m["mandante"] == "Forte":
+            assert X[i, 0] > 0, "Diff_Elo deveria ser positivo após vitórias do Forte"
+            assert X[i, 1] > 1.25, "Ataque_M do Forte deveria superar a média inicial da liga"
+
+    results = model.train(X, y, test_size=0.25)
+    assert "accuracy" in results
+    assert "log_loss" in results
+    assert model.is_trained is True

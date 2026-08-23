@@ -1,6 +1,16 @@
 """
 Modelo preditivo para Libertadores 2026
-Utiliza XGBoost para classificação e Regressão de Poisson para previsão de placares
+
+O classificador XGBoost (1X2) é treinado com dados históricos REAIS
+(``data/historical/partidas_libertadores.csv``, edições 2012–2026), com
+features causais — extraídas apenas do estado ANTERIOR a cada partida
+(Elo, médias móveis de gols com shrinkage, mando/país/fase) — e avaliado
+com split temporal honesto: os últimos 20% das partidas (em ordem de data)
+formam o holdout out-of-sample. Sem dados sintéticos, sem vazamento
+(nenhum scale/CV aleatório sobre série temporal).
+
+A Regressão de Poisson (``poisson.py``) prevê placares e probabilidades
+1X2 a partir de gols esperados.
 """
 
 import pandas as pd
@@ -9,16 +19,19 @@ from pathlib import Path
 import pickle
 from typing import Tuple, Dict, List
 
-from sklearn.model_selection import train_test_split, cross_val_score
-from sklearn.preprocessing import StandardScaler
-from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
-from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import (
+    accuracy_score,
+    classification_report,
+    confusion_matrix,
+    log_loss,
+)
 import xgboost as xgb
 
 from poisson import PoissonScoreModel
 
 # Configurações
 MODEL_DIR = Path(__file__).parent.parent / "models"
+DATA_DIR = Path(__file__).parent.parent / "data"
 MODEL_DIR.mkdir(parents=True, exist_ok=True)
 
 
@@ -26,115 +39,142 @@ class LibertadoresModel:
     """Modelo preditivo para resultados da Libertadores.
 
     Combina duas abordagens:
-      * Classificador XGBoost (1X2) treinado sobre features de confronto;
+      * Classificador XGBoost (1X2) treinado com o histórico real
+        2012–2026 (features causais extraídas do estado anterior a cada
+        partida; holdout temporal = últimos 20% das partidas por data);
       * Modelo de Regressão de Poisson para previsão de placares e
         probabilidades 1X2 a partir de gols esperados (ver ``poisson.py``).
     """
-    
+
     def __init__(self):
         self.classifier = None
-        self.scaler = StandardScaler()
+        # Árvores não precisam de scaling; campo mantido apenas para
+        # compatibilidade com pickles antigos (load_model usa data.get).
+        self.scaler = None
         self.feature_names = []
         self.is_trained = False
         self.poisson = PoissonScoreModel()
     
-    def prepare_training_data(self) -> Tuple[np.ndarray, np.ndarray]:
+    def prepare_training_data(
+        self,
+        csv_path=None,
+        window: int = 10,
+        shrink: float = 5.0,
+        elo_k: float = 32.0,
+    ) -> Tuple[np.ndarray, np.ndarray]:
+        """Constrói o dataset a partir do histórico real, sem vazamento.
+
+        Itera as partidas em ordem de data; as features são extraídas do
+        estado ANTERIOR a cada jogo e só então o estado é atualizado.
+        Alvo: ``{"visitante": 0, "empate": 1, "mandante": 2}``.
         """
-        Prepara dados históricos para treinamento.
-        Em produção, isso carregaria dados das edições anteriores.
-        """
-        # Dados simulados de treinamento (últimas edições)
-        np.random.seed(42)
-        
-        n_samples = 200
-        
-        # Features simuladas
-        X = pd.DataFrame({
-            'Diff_Pts': np.random.uniform(-10, 10, n_samples),
-            'Diff_GP': np.random.uniform(-10, 10, n_samples),
-            'Diff_GC': np.random.uniform(-10, 10, n_samples),
-            'Diff_SG': np.random.uniform(-15, 15, n_samples),
-            'Diff_Aproveitamento': np.random.uniform(-0.5, 0.5, n_samples),
-            'Diff_Media_Gols': np.random.uniform(-2, 2, n_samples),
-            'Diff_Score_Forca': np.random.uniform(-50, 50, n_samples),
-            'Razao_Pts': np.random.uniform(0.5, 1.5, n_samples),
-            'Razao_GP': np.random.uniform(0.5, 1.5, n_samples),
-            'Razao_Score': np.random.uniform(0.5, 1.5, n_samples),
-            'Pais_Mandante_Cod': np.random.choice([1, 2, 3], n_samples),
-            'Pais_Visitante_Cod': np.random.choice([1, 2, 3], n_samples),
-            'Mesmo_Pais': np.random.choice([0, 1], n_samples),
-        })
-        
-        # Resultado simulado (0=Derrota, 1=Empate, 2=Vitória do mandante)
-        y_probs = []
-        for _, row in X.iterrows():
-            # Probabilidades baseadas nas features
-            prob_mandante = 0.35 + row['Diff_Aproveitamento'] * 0.3 + row['Pais_Mandante_Cod'] * 0.02
-            prob_empate = 0.30 - abs(row['Diff_Aproveitamento']) * 0.2
-            prob_visitante = 1 - prob_mandante - prob_empate
-            
-            probs = [prob_visitante, prob_empate, prob_mandante]
-            probs = np.clip(probs, 0, 1)
-            probs = probs / sum(probs)
-            
-            result = np.random.choice([0, 1, 2], p=probs)
-            y_probs.append(result)
-        
-        y = np.array(y_probs)
-        
+        if csv_path is None:
+            csv_path = DATA_DIR / "historical" / "partidas_libertadores.csv"
+
+        df = pd.read_csv(csv_path, parse_dates=["data"])
+        df = df.dropna(subset=["gols_mandante", "gols_visitante"])
+        df = df.sort_values("data").reset_index(drop=True)
+
+        elo: Dict[str, float] = {}
+        gols_pro: Dict[str, List[float]] = {}
+        gols_contra: Dict[str, List[float]] = {}
+        mu = 1.25
+        total_gols = 0.0
+        total_partidas = 0
+
+        target_map = {"visitante": 0, "empate": 1, "mandante": 2}
+        score_mandante = {"mandante": 1.0, "empate": 0.5, "visitante": 0.0}
+
+        def media_movel(hist: List[float]) -> float:
+            n = len(hist)
+            return (sum(hist[-window:]) + shrink * mu) / (n + shrink) if n else mu
+
+        rows = []
+        targets = []
+
+        for _, m in df.iterrows():
+            mand, vis = m["mandante"], m["visitante"]
+            gm, gv = float(m["gols_mandante"]), float(m["gols_visitante"])
+
+            elo_m = elo.get(mand, 1500.0)
+            elo_v = elo.get(vis, 1500.0)
+            ataq_m = media_movel(gols_pro.get(mand, []))
+            def_m = media_movel(gols_contra.get(mand, []))
+            ataq_v = media_movel(gols_pro.get(vis, []))
+            def_v = media_movel(gols_contra.get(vis, []))
+
+            rows.append({
+                "Diff_Elo": elo_m - elo_v,
+                "Ataque_M": ataq_m,
+                "Defesa_M": def_m,
+                "Ataque_V": ataq_v,
+                "Defesa_V": def_v,
+                "Jogos_M": len(gols_pro.get(mand, [])),
+                "Jogos_V": len(gols_pro.get(vis, [])),
+                "Mesmo_Pais": 1 if m["pais_mandante"] == m["pais_visitante"] else 0,
+                "Mata_Mata": 1 if m["fase"] == "Playoffs" else 0,
+                "Diff_Ataque": ataq_m - ataq_v,
+            })
+            targets.append(target_map[m["resultado"]])
+
+            esperado_m = 1.0 / (1.0 + 10.0 ** ((elo_v - elo_m) / 400.0))
+            delta = elo_k * (score_mandante[m["resultado"]] - esperado_m)
+            elo[mand] = elo_m + delta
+            elo[vis] = elo_v - delta
+            gols_pro.setdefault(mand, []).append(gm)
+            gols_contra.setdefault(mand, []).append(gv)
+            gols_pro.setdefault(vis, []).append(gv)
+            gols_contra.setdefault(vis, []).append(gm)
+            total_gols += gm + gv
+            total_partidas += 1
+            mu = total_gols / (2.0 * total_partidas)
+
+        X = pd.DataFrame(rows)
         self.feature_names = X.columns.tolist()
-        
-        return X.values, y
-    
-    def train(self, X: np.ndarray, y: np.ndarray) -> Dict:
-        """Treina o modelo XGBoost."""
+
+        return X.values, np.array(targets)
+
+    def train(self, X: np.ndarray, y: np.ndarray, test_size: float = 0.2) -> Dict:
+        """Treina o XGBoost com split temporal: os últimos ``test_size``%
+        das partidas (X já ordenado por data) formam o holdout de teste."""
         print("=" * 50)
-        print("Treinando modelo...")
+        print("Treinando modelo (split temporal)...")
         print("=" * 50)
-        
-        # Divide dados
-        X_train, X_test, y_train, y_test = train_test_split(
-            X, y, test_size=0.2, random_state=42, stratify=y
-        )
-        
-        # Normaliza features
-        X_train_scaled = self.scaler.fit_transform(X_train)
-        X_test_scaled = self.scaler.transform(X_test)
-        
-        # Treina XGBoost
+
+        cut = int(len(X) * (1 - test_size))
+        X_train, X_test = X[:cut], X[cut:]
+        y_train, y_test = y[:cut], y[cut:]
+
         self.classifier = xgb.XGBClassifier(
-            n_estimators=100,
-            max_depth=5,
-            learning_rate=0.1,
+            n_estimators=300,
+            max_depth=3,
+            learning_rate=0.05,
+            subsample=0.8,
+            colsample_bytree=0.8,
             random_state=42,
-            use_label_encoder=False,
-            eval_metric='mlogloss'
+            eval_metric="mlogloss",
         )
-        
-        self.classifier.fit(X_train_scaled, y_train)
-        
-        # Avalia
-        y_pred = self.classifier.predict(X_test_scaled)
+        self.classifier.fit(X_train, y_train)
+
+        y_pred = self.classifier.predict(X_test)
         accuracy = accuracy_score(y_test, y_pred)
-        
-        # Cross-validation
-        X_scaled = self.scaler.fit_transform(X)
-        cv_scores = cross_val_score(self.classifier, X_scaled, y, cv=5)
-        
+        ll = log_loss(y_test, self.classifier.predict_proba(X_test), labels=[0, 1, 2])
+
         results = {
-            'accuracy': accuracy,
-            'cv_mean': cv_scores.mean(),
-            'cv_std': cv_scores.std(),
-            'classification_report': classification_report(y_test, y_pred),
-            'confusion_matrix': confusion_matrix(y_test, y_pred)
+            "accuracy": accuracy,
+            "log_loss": ll,
+            "classification_report": classification_report(y_test, y_pred),
+            "confusion_matrix": confusion_matrix(y_test, y_pred),
+            "n_train": len(X_train),
+            "n_test": len(X_test),
         }
-        
+
         self.is_trained = True
-        
-        print(f"Acurácia: {accuracy:.2%}")
-        print(f"Cross-Validation: {cv_scores.mean():.2%} (+/- {cv_scores.std()*2:.2%})")
+
+        print(f"Acurácia (holdout temporal): {accuracy:.2%}")
+        print(f"Log-loss (holdout temporal): {ll:.4f}")
         print("=" * 50)
-        
+
         return results
     
     def predict_match(
@@ -147,10 +187,9 @@ class LibertadoresModel:
         
         # Prepara features
         X = match_features[self.feature_names].values
-        X_scaled = self.scaler.transform(X)
-        
+
         # Prediz probabilidades
-        proba = self.classifier.predict_proba(X_scaled)[0]
+        proba = self.classifier.predict_proba(X)[0]
         
         # Mapeia probabilidades
         results = {
@@ -280,7 +319,6 @@ class LibertadoresModel:
         with open(filepath, 'wb') as f:
             pickle.dump({
                 'model': self.classifier,
-                'scaler': self.scaler,
                 'feature_names': self.feature_names
             }, f)
         
@@ -295,7 +333,7 @@ class LibertadoresModel:
             data = pickle.load(f)
         
         self.classifier = data['model']
-        self.scaler = data['scaler']
+        self.scaler = data.get('scaler')
         self.feature_names = data['feature_names']
         self.is_trained = True
         

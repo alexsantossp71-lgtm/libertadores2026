@@ -249,8 +249,8 @@ Com base nos dados da fase de grupos e oitavas, já podemos extrair insights imp
 ### Abordagem em 3 Camadas
 
 1. **Dados Históricos (Força Bruta)**
-   - Coleta das últimas 5 edições da Libertadores (2021–2025) para treinar um modelo de classificação.
-   - Variáveis: gols marcados/sofridos, posse de bola, finalizações, etc.
+   - O classificador **XGBoost** é treinado com **todas as edições históricas 2012–2026** (`data/historical/partidas_libertadores.csv`, 2.226 partidas).
+   - Features causais: **Elo por time**, **médias móveis de gols com shrinkage**, indicadores de **mesmo país** e de **fase mata-mata** — todas extraídas do estado anterior a cada partida (**sem vazamento**, sem *lookahead*).
 
 2. **Contexto Atual (2026)**
    - Utilização dos dados da fase de grupos e oitavas para capturar o momento atual de cada time.
@@ -311,7 +311,8 @@ O CSV `outputs/quartas_previsao.csv` guarda o cenário-base e o cenário com
 elenco (`Prob_*_base`, `Delta_xG_*`, `Nota_Elenco`).
 
 ### Métricas de Avaliação
-- **Acurácia** e **Matriz de Confusão** para classificação.
+- **Acurácia** e **log_loss** do classificador medidos em **holdout out-of-sample**: split temporal com os **últimos 20%** das partidas como conjunto de teste. Resultados medidos: **acurácia ≈ 49,3%** e **log_loss ≈ 1,056**.
+  - Nota honesta: previsão 1X2 no futebol costuma ter um teto prático próximo da acurácia de mercado (~58%); os números acima refletem a dificuldade real da tarefa, não um defeito de validação.
 - **Erro Absoluto Médio (MAE)** para previsão de gols.
 - **Backtesting** com os dados das oitavas de final (validação histórica).
 
