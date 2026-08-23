@@ -178,6 +178,18 @@ class Preprocessor:
             return pd.read_csv(EXAMPLE_PARTIDAS_PATH)
         return generate_partidas()
 
+    def load_fbref_elencos(self) -> pd.DataFrame:
+        """Carrega elencos FBref (processado ou snapshot histórico)."""
+        from fbref_scraper import load_elencos
+
+        return load_elencos()
+
+    def load_fbref_jogadores(self) -> pd.DataFrame:
+        """Carrega jogadores FBref (vazio se a raspagem completa ainda não rodou)."""
+        from fbref_scraper import load_jogadores
+
+        return load_jogadores()
+
     def load_odds(self) -> pd.DataFrame:
         """
         Carrega as odds processadas das partidas (Bzzoiro Sports Data).
