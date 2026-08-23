@@ -102,9 +102,15 @@ class LibertadoresPipeline:
             print("[4/7] ⏭️  Pulando coleta de odds...\n")
             odds_df = self.preprocessor.load_odds()
 
-        # Etapa 5: Pré-processamento
-        print("[5/7] 🔧 Processando dados...")
+        # Etapa 5: Pré-processamento + análise de elenco
+        print("[5/7] 🔧 Processando dados e analisando elencos...")
         grupos_features, oitavas, quartas = self.preprocessor.run()
+        try:
+            from elenco_analysis import run as run_elenco
+
+            run_elenco(persist=True)
+        except FileNotFoundError as exc:
+            print(f"   ⚠️  Análise de elenco indisponível: {exc}")
         print()
 
         # Etapa 6: Ajuste do modelo de Poisson

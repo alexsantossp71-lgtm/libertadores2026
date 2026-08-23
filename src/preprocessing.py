@@ -27,7 +27,9 @@ class Preprocessor:
         quartas = pd.read_csv(RAW_DIR / "confrontos_quartas.csv")
         return grupos, oitavas, quartas
     
-    def create_features(self, df_grupos: pd.DataFrame) -> pd.DataFrame:
+    def create_features(
+        self, df_grupos: pd.DataFrame, incluir_elenco: bool = False
+    ) -> pd.DataFrame:
         """Cria features a partir dos dados da fase de grupos."""
         df = df_grupos.copy()
         
@@ -55,8 +57,30 @@ class Preprocessor:
             'Aproveitamento', 'Media_Gols_Marcados', 'Media_Gols_Sofridos',
             'Razao_Gols', 'Pais_Cod', 'Score_Forca'
         ]
+
+        if incluir_elenco:
+            df = self._merge_elenco_features(df)
         
         return df
+
+    def _merge_elenco_features(self, df: pd.DataFrame) -> pd.DataFrame:
+        """Anexa índices FBref / química / forma sem quebrar times sem match."""
+        try:
+            from elenco_analysis import ELENCO_FEATURE_COLS, analisar_elencos
+        except Exception:
+            return df
+        try:
+            elencos = analisar_elencos()
+        except FileNotFoundError:
+            return df
+        keep = ["time"] + [c for c in list(ELENCO_FEATURE_COLS) + ["score_elenco"] if c in elencos.columns]
+        extra = elencos[keep].drop_duplicates("time")
+        merged = df.merge(extra, left_on="Time", right_on="time", how="left")
+        merged = merged.drop(columns=["time"], errors="ignore")
+        for col in extra.columns:
+            if col != "time" and col not in self.feature_names:
+                self.feature_names.append(col)
+        return merged
     
     def create_match_features(
         self, 
@@ -101,6 +125,19 @@ class Preprocessor:
             'Pais_Visitante_Cod': [time_visitante['Pais_Cod']],
             'Mesmo_Pais': [1 if time_mandante['Pais'] == time_visitante['Pais'] else 0],
         })
+
+        elenco_cols = [
+            "indice_forca_ofensiva", "indice_pressao_defensiva", "indice_disciplina",
+            "quimica_elenco", "risco_suspensao", "score_elenco",
+            "forma_gols_pro_90", "forma_gols_contra_90", "forma_aproveitamento",
+        ]
+        for col in elenco_cols:
+            if col not in df.columns:
+                continue
+            a, b = time_mandante.get(col), time_visitante.get(col)
+            if pd.isna(a) or pd.isna(b):
+                continue
+            match_features[f"Diff_{col}"] = [float(a) - float(b)]
         
         return match_features
     

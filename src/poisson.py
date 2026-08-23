@@ -74,6 +74,8 @@ class PoissonScoreModel:
         self.league_avg: float = 0.0
         self.teams: List[str] = []
         self.is_fitted: bool = False
+        self.elenco_applied: bool = False
+        self.elenco_multipliers: Dict[str, Tuple[float, float]] = {}
 
     # ------------------------------------------------------------------ #
     # Ajuste do modelo
@@ -123,7 +125,38 @@ class PoissonScoreModel:
         }
         self.teams = sorted(self.attack.keys())
         self.is_fitted = True
+        self.elenco_applied = False
+        self.elenco_multipliers = {}
+        self._attack_base = dict(self.attack)
+        self._defense_base = dict(self.defense)
 
+        return self
+
+    def apply_elenco_multipliers(
+        self, multipliers: Dict[str, Tuple[float, float]]
+    ) -> "PoissonScoreModel":
+        """Aplica multiplicadores de elenco sobre as forças da fase de grupos.
+
+        ``multipliers[time] = (mult_ataque, mult_defesa)``. Defesa é taxa de
+        gols sofridos: valor < 1 significa sofrer menos. Sempre parte das
+        forças-base do ``fit`` (idempotente).
+        """
+        if not self.is_fitted:
+            raise RuntimeError("Modelo não ajustado. Execute fit() primeiro.")
+        base_att = getattr(self, "_attack_base", self.attack)
+        base_def = getattr(self, "_defense_base", self.defense)
+        self.attack = dict(base_att)
+        self.defense = dict(base_def)
+        applied: Dict[str, Tuple[float, float]] = {}
+        for team, pair in multipliers.items():
+            if team not in self.attack:
+                continue
+            att_m, def_m = float(pair[0]), float(pair[1])
+            self.attack[team] = max(0.05, self.attack[team] * att_m)
+            self.defense[team] = max(0.05, self.defense[team] * def_m)
+            applied[team] = (att_m, def_m)
+        self.elenco_applied = bool(applied)
+        self.elenco_multipliers = applied
         return self
 
     # ------------------------------------------------------------------ #

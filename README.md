@@ -79,6 +79,8 @@ data/
 │   ├── features_libertadores.csv                  # Dados com engenharia de features
 │   ├── fbref_elencos.csv / fbref_jogadores.csv    # Saída da raspagem FBref
 │   ├── fbref_libertadores.sqlite                  # temporada → time → jogador
+│   ├── analise_elencos.csv / forma_recente.csv     # Índices de elenco + últimos 5 jogos
+│   ├── analise_confrontos_elenco.csv              # Quartas com/sem ajuste de elenco
 │   ├── libertadores_estatisticas_detalhadas.csv   # Estatísticas por partida (API Futebol)
 │   └── libertadores_odds.csv                      # Odds 1X2 processadas (Bzzoiro)
 ├── examples/          # Bases de exemplo (versionadas — fallback sem API)
@@ -292,6 +294,22 @@ provável. A implementação está em [`src/poisson.py`](src/poisson.py).
 > Referências conceituais: Maher (1982) e Dixon & Coles (1997), na forma
 > multiplicativa simplificada aplicável a estatísticas agregadas da fase de grupos.
 
+### Ajuste por análise de elenco
+
+Depois do `fit` clássico, [`src/elenco_analysis.py`](src/elenco_analysis.py)
+multiplica ataque e defesa por índices reais:
+
+| Sinal | Fonte | Efeito no Poisson |
+|-------|-------|-------------------|
+| Poder de fogo | 0.4·gols/90 + 0.3·assist/90 + 0.2·SoT/90 + 0.1·chutes/90 | sobe/desce `ataque` |
+| Pressão defensiva | (desarmes ganhos + interceptações) / 90 | reduz `defesa` (gols sofridos) |
+| Química | `11 / n_jogadores` (proxy de repetição de XI) | leve bônus de organização |
+| Disciplina | cartões + faltas / 90 | time sujo sofre um pouco mais |
+| Forma recente | últimos 5 jogos (openfootball) | mistura 20% na taxa observada |
+
+O CSV `outputs/quartas_previsao.csv` guarda o cenário-base e o cenário com
+elenco (`Prob_*_base`, `Delta_xG_*`, `Nota_Elenco`).
+
 ### Métricas de Avaliação
 - **Acurácia** e **Matriz de Confusão** para classificação.
 - **Erro Absoluto Médio (MAE)** para previsão de gols.
@@ -310,13 +328,10 @@ Com base nos dados atuais e na análise estatística preliminar, as probabilidad
 | QF3 | Palmeiras (BRA) | LDU (ECU) | **50%** | 28% | 22% | 1x0 |
 | QF4 | Flamengo (BRA) | Tolima ou IDV | — | — | — | a definir (volta em 25/08) |
 
-*Previsões do modelo de Poisson ajustado aos dados reais da fase de grupos 2026
-(32 times; média real de 1,17 gols/time/jogo). QF4 aguarda o vencedor de
-Tolima × IndepDV | — | — | — | a definir (volta em 25/08) |
-
-*Previsões do modelo de Poisson ajustado aos dados reais da fase de grupos 2026
-(32 times; média real de 1,17 gols/time/jogo). QF4 aguarda o vencedor de
-Tolima × Independiente del Valle (25/08).*
+*Previsões do Poisson da fase de grupos **ajustado pelos índices de elenco**
+(FBref + forma recente). QF4 aguarda o vencedor de Tolima × Independiente
+del Valle (25/08). Rode `python src/predict.py` para o CSV com cenário-base
+e cenário-elenco lado a lado.*
 
 A aba **🏆 Mata-mata até o título** do dashboard mostra o chaveamento completo em
 cards por fase (quartas reais → semis e final previstas → **campeão previsto com
@@ -433,7 +448,8 @@ libertadores2026/
 ├── app.py                 # 🖥️ Dashboard interativo (Streamlit)
 ├── pages/
 │   ├── 5_Arbitragem.py    # 🟨 Análise de arbitragem e estatísticas
-│   └── 6_Odds.py          # 📊 Odds e probabilidades de mercado
+│   ├── 6_Odds.py          # 📊 Odds e probabilidades de mercado
+│   └── 7_Elencos.py       # 👕 Análise de elencos (FBref + forma)
 ├── .streamlit/
 │   └── config.toml        # Tema e configuração do dashboard
 ├── data/
@@ -453,6 +469,7 @@ libertadores2026/
 │   ├── scraper.py             # Materializa as tabelas do dashboard (dados reais)
 │   ├── fbref_scraper.py       # Raspagem FBref (elencos/jogadores → CSV + SQLite)
 │   ├── fbref_features.py      # Índices de força ofensiva / pressão defensiva
+│   ├── elenco_analysis.py     # Análise de elenco + ajuste do Poisson
 │   ├── api_futebol_client.py  # Cliente da API Futebol (estatísticas/arbitragem)
 │   ├── odds_client.py         # Cliente de odds da Bzzoiro Sports Data
 │   ├── generate_example_data.py  # Gerador determinístico das bases de exemplo
@@ -469,6 +486,7 @@ libertadores2026/
 │   ├── test_api_futebol_client.py # Testes do cliente da API Futebol
 │   ├── test_odds_client.py        # Testes do cliente de odds
 │   ├── test_fbref_scraper.py      # Testes do parser/fallback FBref
+│   ├── test_elenco_analysis.py    # Testes da análise de elenco / Poisson
 │   └── test_generate_example_data.py  # Testes do gerador de exemplo
 ├── models/                # Modelos treinados (gitignored, gerados localmente)
 ├── outputs/
