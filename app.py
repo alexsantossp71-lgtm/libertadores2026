@@ -31,39 +31,17 @@ import plotly.express as px
 import plotly.graph_objects as go
 import streamlit as st
 
-# --------------------------------------------------------------------------- #
-# Configuração de paths / imports do projeto
-# --------------------------------------------------------------------------- #
+from src.dashboard_utils import fit_model, flag, load_grupos_features
+from src.poisson import PoissonScoreModel
+from src.preprocessing import Preprocessor
+from src.scraper import LibertadoresScraper
+
 ROOT_DIR = Path(__file__).parent.resolve()
-SRC_DIR = ROOT_DIR / "src"
 RAW_DIR = ROOT_DIR / "data" / "raw"
 OUTPUT_DIR = ROOT_DIR / "outputs"
 
-if str(SRC_DIR) not in sys.path:
-    sys.path.insert(0, str(SRC_DIR))
-
-from poisson import PoissonScoreModel  # noqa: E402
-from preprocessing import Preprocessor  # noqa: E402
-from scraper import LibertadoresScraper  # noqa: E402
-
-REQUIRED_FILES = [
-    "grupos_libertadores_2026.csv",
-    "oitavas_resultados.csv",
-    "confrontos_quartas.csv",
-]
-
-FLAGS = {
-    "BRA": "🇧🇷",
-    "ARG": "🇦🇷",
-    "ECU": "🇪🇨",
-    "CHI": "🇨🇱",
-    "COL": "🇨🇴",
-    "URU": "🇺🇾",
-    "PAR": "🇵🇾",
-    "PER": "🇵🇪",
-    "BOL": "🇧🇴",
-    "VEN": "🇻🇪",
-}
+if str(ROOT_DIR) not in sys.path:
+    sys.path.insert(0, str(ROOT_DIR))
 
 # --------------------------------------------------------------------------- #
 # Configuração da página
@@ -134,50 +112,8 @@ st.markdown(
 
 
 # --------------------------------------------------------------------------- #
-# Carga de dados e modelo (com cache)
+# Helpers de apresentação
 # --------------------------------------------------------------------------- #
-def _ensure_raw_data() -> None:
-    """Garante que os CSVs brutos existam; se faltar algum, roda o scraper."""
-    missing = [f for f in REQUIRED_FILES if not (RAW_DIR / f).exists()]
-    if missing:
-        LibertadoresScraper().run()
-
-
-@st.cache_data(show_spinner="Carregando dados da Libertadores 2026...")
-def load_data() -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
-    """Carrega grupos (com features), oitavas e confrontos das quartas."""
-    _ensure_raw_data()
-    pre = Preprocessor()
-    grupos, oitavas, quartas = pre.load_data()
-    grupos_features = pre.create_features(grupos)
-    return grupos_features, oitavas, quartas
-
-
-def _apply_elenco(model: PoissonScoreModel) -> PoissonScoreModel:
-    """Mistura os índices de elenco (FBref + forma) no modelo já ajustado."""
-    try:
-        from elenco_analysis import analisar_elencos, aplicar_elenco_ao_poisson, forma_recente
-
-        aplicar_elenco_ao_poisson(model, analisar_elencos(), forma=forma_recente())
-    except FileNotFoundError:
-        pass
-    return model
-
-
-@st.cache_resource(show_spinner="Ajustando modelo de Poisson...")
-def fit_model(
-    grupos_features: pd.DataFrame, home_advantage: float, max_goals: int
-) -> PoissonScoreModel:
-    """Ajusta o Poisson e mistura os índices de elenco (FBref + forma)."""
-    model = PoissonScoreModel(home_advantage=home_advantage, max_goals=max_goals)
-    model.fit(grupos_features)
-    return _apply_elenco(model)
-
-
-def flag(pais: str) -> str:
-    return FLAGS.get(str(pais).upper(), "🏳️")
-
-
 def team_country(grupos: pd.DataFrame, time: str) -> str:
     row = grupos.loc[grupos["Time"] == time, "Pais"]
     return str(row.iloc[0]) if len(row) else ""
@@ -306,7 +242,7 @@ def monte_carlo_bracket(
     seed: int = 42,
 ) -> pd.DataFrame:
     """Simula quartas → semis → final N vezes e retorna probabilidades por fase."""
-    model = fit_model(grupos_features, home_advantage, max_goals)
+    model = fit_model(home_advantage, max_goals)
 
     rng = np.random.default_rng(seed)
     teams = sorted({t for pair in pairs for t in pair})
@@ -409,8 +345,8 @@ with st.sidebar:
 # --------------------------------------------------------------------------- #
 # Dados + modelo
 # --------------------------------------------------------------------------- #
-grupos, oitavas, quartas = load_data()
-model = fit_model(grupos, home_advantage, max_goals)
+grupos, oitavas, quartas = load_grupos_features()
+model = fit_model(home_advantage, max_goals)
 
 st.markdown(
     """
@@ -433,8 +369,7 @@ c4.metric("Confrontos nas quartas", len(quartas))
 # Métricas resumidas das novas análises (arbitragem e odds)
 # --------------------------------------------------------------------------- #
 try:
-    from dashboard_utils import load_referee_summary, load_model_market
-    from preprocessing import Preprocessor as _Preprocessor
+    from src.dashboard_utils import load_model_market, load_referee_summary
 
     _resumo_arbitros = load_referee_summary()
     _model_market = load_model_market()
@@ -457,7 +392,7 @@ try:
         )
 
         if not _model_market.empty:
-            _pre = _Preprocessor()
+            _pre = Preprocessor()
             _ev_odds = _pre.evaluate_probabilities(
                 _model_market,
                 ("prob_mandante_impl", "prob_empate_impl", "prob_visitante_impl"),

@@ -11,22 +11,14 @@ Fonte dos dados: ``data/processed/libertadores_estatisticas_detalhadas.csv``
 
 from __future__ import annotations
 
-import sys
-from pathlib import Path
-
 import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
 import streamlit as st
 from scipy import stats
 
-ROOT_DIR = Path(__file__).resolve().parent.parent
-SRC_DIR = ROOT_DIR / "src"
-if str(SRC_DIR) not in sys.path:
-    sys.path.insert(0, str(SRC_DIR))
-
-from dashboard_utils import load_estatisticas, load_referee_summary  # noqa: E402
-from preprocessing import Preprocessor  # noqa: E402
+from src.dashboard_utils import load_estatisticas, load_referee_summary
+from src.preprocessing import Preprocessor
 
 st.set_page_config(
     page_title="🟨 Análise de Arbitragem e Estatísticas",

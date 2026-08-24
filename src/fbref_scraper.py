@@ -451,7 +451,7 @@ def canonical_squad(name: Optional[str], squad_id: Optional[str] = None) -> str:
     if key in _NAME_ALIASES:
         return _NAME_ALIASES[key]
     try:
-        from real_data import short_name
+        from src.real_data import short_name
 
         return short_name(cleaned)
     except Exception:

@@ -21,7 +21,7 @@ from typing import Optional, Sequence
 import numpy as np
 import pandas as pd
 
-from fbref_scraper import load_elencos, load_jogadores
+from src.fbref_scraper import load_elencos, load_jogadores
 
 
 def _col(df: pd.DataFrame, name: str, default: float = 0.0) -> pd.Series:

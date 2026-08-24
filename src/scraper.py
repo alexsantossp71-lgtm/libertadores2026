@@ -13,15 +13,7 @@ Se o dataset ainda não existir, o build roda automaticamente (fontes em
 ``data/historical/openfootball/`` — nenhum dado simulado é criado).
 """
 
-from pathlib import Path
-import sys
-
-ROOT_DIR = Path(__file__).parent.parent
-
-if str(ROOT_DIR / "src") not in sys.path:
-    sys.path.insert(0, str(ROOT_DIR / "src"))
-
-from real_data import build_app_tables, build_dataset, load_partidas  # noqa: E402
+from src.real_data import build_app_tables, build_dataset, load_partidas
 
 
 class LibertadoresScraper:

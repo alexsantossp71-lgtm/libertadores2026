@@ -8,19 +8,11 @@ ajustam o Poisson das previsões.
 
 from __future__ import annotations
 
-import sys
-from pathlib import Path
-
 import pandas as pd
 import plotly.express as px
 import streamlit as st
 
-ROOT_DIR = Path(__file__).resolve().parent.parent
-SRC_DIR = ROOT_DIR / "src"
-if str(SRC_DIR) not in sys.path:
-    sys.path.insert(0, str(SRC_DIR))
-
-from elenco_analysis import (  # noqa: E402
+from src.elenco_analysis import (
     analisar_elencos,
     features_confronto_elenco,
     forma_recente,

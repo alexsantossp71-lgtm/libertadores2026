@@ -365,9 +365,10 @@ respeitando o chaveamento oficial: **QF1 × QF2** e **QF3 × QF4** nas semifinai
    venv\Scripts\activate      # Windows
    ```
 
-3. **Instale as dependências**
+3. **Instale as dependências e o pacote**
    ```bash
    pip install -r requirements.txt
+   pip install -e .   # torna o pacote `src` importável (app, páginas, testes)
    ```
 
 4. **Configure as chaves de API (opcional)**

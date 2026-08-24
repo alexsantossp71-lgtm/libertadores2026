@@ -66,7 +66,7 @@ class Preprocessor:
     def _merge_elenco_features(self, df: pd.DataFrame) -> pd.DataFrame:
         """Anexa índices FBref / química / forma sem quebrar times sem match."""
         try:
-            from elenco_analysis import ELENCO_FEATURE_COLS, analisar_elencos
+            from src.elenco_analysis import ELENCO_FEATURE_COLS, analisar_elencos
         except Exception:
             return df
         try:
@@ -198,7 +198,7 @@ class Preprocessor:
           2. base de exemplo — **apenas** se ``ALLOW_EXAMPLE_DATA=1``
              (desligada por padrão: o projeto usa somente dados reais).
         """
-        from api_futebol_client import PROCESSED_PATH as STATS_PATH
+        from src.api_futebol_client import PROCESSED_PATH as STATS_PATH
 
         if STATS_PATH.exists():
             return pd.read_csv(STATS_PATH)
@@ -209,7 +209,7 @@ class Preprocessor:
                 "API_FUTEBOL_KEY (ver .env.example) e rode o pipeline. "
                 "Para usar a base sintética em desenvolvimento: ALLOW_EXAMPLE_DATA=1."
             )
-        from generate_example_data import EXAMPLE_PARTIDAS_PATH, generate_partidas
+        from src.generate_example_data import EXAMPLE_PARTIDAS_PATH, generate_partidas
 
         if EXAMPLE_PARTIDAS_PATH.exists():
             return pd.read_csv(EXAMPLE_PARTIDAS_PATH)
@@ -217,13 +217,13 @@ class Preprocessor:
 
     def load_fbref_elencos(self) -> pd.DataFrame:
         """Carrega elencos FBref (processado ou snapshot histórico)."""
-        from fbref_scraper import load_elencos
+        from src.fbref_scraper import load_elencos
 
         return load_elencos()
 
     def load_fbref_jogadores(self) -> pd.DataFrame:
         """Carrega jogadores FBref (vazio se a raspagem completa ainda não rodou)."""
-        from fbref_scraper import load_jogadores
+        from src.fbref_scraper import load_jogadores
 
         return load_jogadores()
 
@@ -235,7 +235,7 @@ class Preprocessor:
           1. ``data/processed/libertadores_odds.csv`` (gerado pelo pipeline);
           2. base de exemplo — **apenas** se ``ALLOW_EXAMPLE_DATA=1``.
         """
-        from odds_client import PROCESSED_PATH as ODDS_PATH
+        from src.odds_client import PROCESSED_PATH as ODDS_PATH
 
         if ODDS_PATH.exists():
             return pd.read_csv(ODDS_PATH)
@@ -246,7 +246,7 @@ class Preprocessor:
                 "(ver .env.example) e rode o pipeline. "
                 "Para usar a base sintética em desenvolvimento: ALLOW_EXAMPLE_DATA=1."
             )
-        from generate_example_data import EXAMPLE_ODDS_PATH, generate_odds
+        from src.generate_example_data import EXAMPLE_ODDS_PATH, generate_odds
 
         if EXAMPLE_ODDS_PATH.exists():
             return pd.read_csv(EXAMPLE_ODDS_PATH)

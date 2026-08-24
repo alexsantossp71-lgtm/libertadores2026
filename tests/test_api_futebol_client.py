@@ -2,7 +2,7 @@
 
 
 
-from api_futebol_client import (
+from src.api_futebol_client import (
     ApiFutebolClient,
     _alias_stats,
     _extract_arbitro_nome,
@@ -135,7 +135,7 @@ def test_has_key_uses_environment(monkeypatch):
 def test_run_offline_uses_example_data(monkeypatch, tmp_path):
     monkeypatch.delenv("API_FUTEBOL_KEY", raising=False)
     monkeypatch.setattr(
-        "api_futebol_client.PROCESSED_PATH", tmp_path / "estatisticas.csv"
+        "src.api_futebol_client.PROCESSED_PATH", tmp_path / "estatisticas.csv"
     )
     client = ApiFutebolClient(api_key=None)
     df = client.run()

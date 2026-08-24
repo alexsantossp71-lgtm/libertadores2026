@@ -27,7 +27,7 @@ from sklearn.metrics import (
 )
 import xgboost as xgb
 
-from poisson import PoissonScoreModel
+from src.poisson import PoissonScoreModel
 
 # Configurações
 MODEL_DIR = Path(__file__).parent.parent / "models"
@@ -225,7 +225,7 @@ class LibertadoresModel:
         self.poisson.fit(grupos_df)
         if aplicar_elenco:
             try:
-                from elenco_analysis import aplicar_elenco_ao_poisson, analisar_elencos, forma_recente
+                from src.elenco_analysis import aplicar_elenco_ao_poisson, analisar_elencos, forma_recente
 
                 elencos = analisar_elencos()
                 aplicar_elenco_ao_poisson(self.poisson, elencos, forma=forma_recente())

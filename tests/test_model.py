@@ -3,8 +3,8 @@
 import pandas as pd
 import pytest
 
-from model import LibertadoresModel
-from preprocessing import Preprocessor
+from src.model import LibertadoresModel
+from src.preprocessing import Preprocessor
 
 
 @pytest.fixture

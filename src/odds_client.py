@@ -48,7 +48,7 @@ try:
 except Exception:  # pragma: no cover - dotenv é opcional
     pass
 
-from generate_example_data import (  # noqa: E402
+from src.generate_example_data import (  # noqa: E402
     EXAMPLE_ODDS_PATH,
     EXAMPLE_PARTIDAS_PATH,
     ODDS_COLUMNS,
@@ -515,7 +515,7 @@ def _days_between(date_a: str, date_b: str) -> int:
 
 def _load_partidas_default() -> pd.DataFrame:
     """Prefere o CSV processado de estatísticas; senão, os dados de exemplo."""
-    from api_futebol_client import PROCESSED_PATH as STATS_PATH
+    from src.api_futebol_client import PROCESSED_PATH as STATS_PATH
 
     if STATS_PATH.exists():
         return pd.read_csv(STATS_PATH)
@@ -525,7 +525,7 @@ def _load_partidas_default() -> pd.DataFrame:
 def _load_example_partidas() -> pd.DataFrame:
     if EXAMPLE_PARTIDAS_PATH.exists():
         return pd.read_csv(EXAMPLE_PARTIDAS_PATH)
-    from generate_example_data import generate_partidas
+    from src.generate_example_data import generate_partidas
 
     return generate_partidas()
 

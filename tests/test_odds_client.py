@@ -3,7 +3,7 @@
 
 import pytest
 
-from odds_client import (
+from src.odds_client import (
     BzzoiroOddsClient,
     _odds_from_payload,
     implied_probabilities,
@@ -71,7 +71,7 @@ def test_has_key_uses_environment(monkeypatch):
 def test_run_offline_uses_example_odds(monkeypatch, tmp_path):
     monkeypatch.delenv("BSD_API", raising=False)
     monkeypatch.setattr(
-        "odds_client.PROCESSED_PATH", tmp_path / "libertadores_odds.csv"
+        "src.odds_client.PROCESSED_PATH", tmp_path / "libertadores_odds.csv"
     )
     client = BzzoiroOddsClient(api_key=None)
     df = client.run()

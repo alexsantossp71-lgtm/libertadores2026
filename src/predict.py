@@ -17,14 +17,14 @@ from typing import Dict, List
 
 import pandas as pd
 
-from elenco_analysis import (
+from src.elenco_analysis import (
     aplicar_elenco_ao_poisson,
     persistir_analise,
     prever_confronto_com_elenco,
     run as run_analise,
 )
-from model import LibertadoresModel
-from preprocessing import Preprocessor
+from src.model import LibertadoresModel
+from src.preprocessing import Preprocessor
 
 OUTPUT_DIR = Path(__file__).parent.parent / "outputs"
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)

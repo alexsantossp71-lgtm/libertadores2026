@@ -5,8 +5,8 @@ from pathlib import Path
 import pandas as pd
 import pytest
 
-from fbref_features import confronto_indices, indices_elencos, indices_jogadores
-from fbref_scraper import (
+from src.fbref_features import confronto_indices, indices_elencos, indices_jogadores
+from src.fbref_scraper import (
     FBrefClient,
     FBrefUnavailableError,
     canonical_squad,
@@ -54,7 +54,7 @@ def test_split_annotates_against_suffix(fixture_html):
     )
     assert set(squads_for["time"]) == {"Flamengo", "Palmeiras"}
     assert "gols" in squads_for.columns
-    from fbref_scraper import prefix_against
+    from src.fbref_scraper import prefix_against
 
     against = prefix_against(squads_against)
     assert "gols_sofrido" in against.columns

@@ -1,14 +1,9 @@
 """Testes do módulo de dados reais (openfootball + suplementos ESPN/FBref)."""
 
-import sys
-from pathlib import Path
-
 import pandas as pd
 import pytest
 
-sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
-
-from real_data import (  # noqa: E402
+from src.real_data import (
     QUARTAS_PATH,
     _parse_tail,
     knockout_results,

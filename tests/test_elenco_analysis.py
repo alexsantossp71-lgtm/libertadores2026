@@ -4,7 +4,7 @@
 import pandas as pd
 import pytest
 
-from elenco_analysis import (
+from src.elenco_analysis import (
     ElencoWeights,
     analisar_elencos,
     aplicar_elenco_ao_poisson,
@@ -13,7 +13,7 @@ from elenco_analysis import (
     prever_confronto_com_elenco,
     quimica_e_disciplina,
 )
-from poisson import PoissonScoreModel
+from src.poisson import PoissonScoreModel
 
 
 def test_quimica_maior_quando_menos_jogadores():
@@ -108,7 +108,7 @@ def test_apply_elenco_multipliers_idempotente():
 
 
 def test_predictor_resolve_qf3_cenarios():
-    from predict import LibertadoresPredictor
+    from src.predict import LibertadoresPredictor
 
     quartas = pd.DataFrame([
         {"Confronto": "QF3", "Mandante": "Flamengo",
@@ -126,7 +126,7 @@ def test_predictor_resolve_qf3_cenarios():
 
 
 def test_create_features_elenco_opt_in():
-    from preprocessing import Preprocessor
+    from src.preprocessing import Preprocessor
 
     grupos = pd.DataFrame({
         "Time": ["Flamengo", "Time_X"],

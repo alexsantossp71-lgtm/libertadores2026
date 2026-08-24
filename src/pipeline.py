@@ -17,19 +17,13 @@ de API), as etapas 3 e 4 usam as bases de exemplo de ``data/examples/``.
 A etapa FBref cai no snapshot versionado em ``data/historical/fbref/``.
 """
 
-import sys
-from pathlib import Path
-
-# Adiciona src ao path
-sys.path.insert(0, str(Path(__file__).parent))
-
-from scraper import LibertadoresScraper
-from preprocessing import Preprocessor
-from model import LibertadoresModel
-from predict import LibertadoresPredictor
-from api_futebol_client import ApiFutebolClient
-from odds_client import BzzoiroOddsClient
-from fbref_scraper import FBrefClient
+from src.scraper import LibertadoresScraper
+from src.preprocessing import Preprocessor
+from src.model import LibertadoresModel
+from src.predict import LibertadoresPredictor
+from src.api_futebol_client import ApiFutebolClient
+from src.odds_client import BzzoiroOddsClient
+from src.fbref_scraper import FBrefClient
 
 
 class LibertadoresPipeline:
@@ -106,7 +100,7 @@ class LibertadoresPipeline:
         print("[5/7] 🔧 Processando dados e analisando elencos...")
         grupos_features, oitavas, quartas = self.preprocessor.run()
         try:
-            from elenco_analysis import run as run_elenco
+            from src.elenco_analysis import run as run_elenco
 
             run_elenco(persist=True)
         except FileNotFoundError as exc:

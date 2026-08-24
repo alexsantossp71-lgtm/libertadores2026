@@ -1,0 +1,40 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "libertadores2026"
+version = "1.0.0"
+description = "Previsões da Copa Libertadores 2026 com modelo de Poisson e dashboard Streamlit"
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+authors = [{ name = "Alex Santos" }]
+dependencies = [
+    "pandas>=2.0.0",
+    "numpy>=1.24.0",
+    "matplotlib>=3.7.0",
+    "seaborn>=0.12.0",
+    "scikit-learn>=1.2.0",
+    "xgboost>=1.7.0",
+    "statsmodels>=0.14.0",
+    "scipy>=1.10.0",
+    "requests>=2.28.0",
+    "python-dotenv>=1.0.0",
+    "beautifulsoup4>=4.12.0",
+    "streamlit>=1.49.0",
+    "plotly>=5.18.0",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=7.0.0", "jupyter>=1.0.0", "ruff>=0.4.0"]
+
+[tool.setuptools.packages.find]
+include = ["src*"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py39"
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F"]

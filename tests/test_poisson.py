@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from poisson import PoissonScoreModel
+from src.poisson import PoissonScoreModel
 
 
 @pytest.fixture

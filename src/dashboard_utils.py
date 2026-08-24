@@ -11,23 +11,18 @@ funciona mesmo sem as chaves de API ou sem rodar o pipeline antes.
 
 from __future__ import annotations
 
-import sys
 from pathlib import Path
 from typing import Tuple
 
 import pandas as pd
 import streamlit as st
 
+from src.poisson import PoissonScoreModel
+from src.preprocessing import Preprocessor
+from src.scraper import LibertadoresScraper
+
 ROOT_DIR = Path(__file__).resolve().parent.parent
-SRC_DIR = ROOT_DIR / "src"
 RAW_DIR = ROOT_DIR / "data" / "raw"
-
-if str(SRC_DIR) not in sys.path:
-    sys.path.insert(0, str(SRC_DIR))
-
-from poisson import PoissonScoreModel  # noqa: E402
-from preprocessing import Preprocessor  # noqa: E402
-from scraper import LibertadoresScraper  # noqa: E402
 
 REQUIRED_FILES = [
     "grupos_libertadores_2026.csv",
@@ -69,7 +64,7 @@ def fit_model(home_advantage: float = 1.15, max_goals: int = 10) -> PoissonScore
     model = PoissonScoreModel(home_advantage=home_advantage, max_goals=max_goals)
     model.fit(grupos_features)
     try:
-        from elenco_analysis import analisar_elencos, aplicar_elenco_ao_poisson, forma_recente
+        from src.elenco_analysis import analisar_elencos, aplicar_elenco_ao_poisson, forma_recente
 
         aplicar_elenco_ao_poisson(model, analisar_elencos(), forma=forma_recente())
     except FileNotFoundError:

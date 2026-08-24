@@ -3,7 +3,7 @@
 import numpy as np
 import pandas as pd
 
-from generate_example_data import (
+from src.generate_example_data import (
     ODDS_COLUMNS,
     PARTIDAS_COLUMNS,
     generate_odds,

@@ -34,12 +34,12 @@ from typing import Dict, Optional, Sequence, Tuple
 import numpy as np
 import pandas as pd
 
-from fbref_features import (
+from src.fbref_features import (
     confronto_indices,
     indices_completos,
     indices_jogadores,
 )
-from fbref_scraper import load_elencos, load_jogadores
+from src.fbref_scraper import load_elencos, load_jogadores
 
 ROOT_DIR = Path(__file__).resolve().parent.parent
 PROCESSED_DIR = ROOT_DIR / "data" / "processed"

@@ -50,7 +50,7 @@ try:
 except Exception:  # pragma: no cover - dotenv é opcional
     pass
 
-from generate_example_data import (  # noqa: E402
+from src.generate_example_data import (  # noqa: E402
     EXAMPLE_PARTIDAS_PATH,
     PARTIDAS_COLUMNS,
     generate_partidas,

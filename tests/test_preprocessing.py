@@ -3,7 +3,7 @@
 import pandas as pd
 import pytest
 
-from preprocessing import Preprocessor
+from src.preprocessing import Preprocessor
 
 
 @pytest.fixture
@@ -184,14 +184,10 @@ def test_combined_probabilities_rule():
 
 def test_load_estatisticas_raises_without_flag(monkeypatch, tmp_path):
     """Sem ALLOW_EXAMPLE_DATA a base sintética é recusada (só dados reais)."""
-    import sys
-    from pathlib import Path
+    import src.api_futebol_client as api_futebol_client
+    import src.odds_client as odds_client
 
     monkeypatch.delenv("ALLOW_EXAMPLE_DATA", raising=False)
-    sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
-    import api_futebol_client
-    import odds_client
-
     monkeypatch.setattr(api_futebol_client, "PROCESSED_PATH", tmp_path / "nao_existe.csv")
     monkeypatch.setattr(odds_client, "PROCESSED_PATH", tmp_path / "nao_existe.csv")
 
@@ -204,14 +200,10 @@ def test_load_estatisticas_raises_without_flag(monkeypatch, tmp_path):
 
 def test_load_estatisticas_and_odds_fallback(monkeypatch, tmp_path):
     """Com ALLOW_EXAMPLE_DATA=1 os loaders funcionam offline (bases de exemplo)."""
-    import sys
-    from pathlib import Path
+    import src.api_futebol_client as api_futebol_client
+    import src.odds_client as odds_client
 
     monkeypatch.setenv("ALLOW_EXAMPLE_DATA", "1")
-    sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
-    import api_futebol_client
-    import odds_client
-
     monkeypatch.setattr(api_futebol_client, "PROCESSED_PATH", tmp_path / "nao_existe.csv")
     monkeypatch.setattr(odds_client, "PROCESSED_PATH", tmp_path / "nao_existe.csv")
 
@@ -233,7 +225,7 @@ def test_model_vs_market_joins_probabilities():
             "GP": [10, 4], "GC": [4, 10], "SG": [6, -6],
         }
     )
-    from poisson import PoissonScoreModel
+    from src.poisson import PoissonScoreModel
 
     model = PoissonScoreModel()
     model.fit(preprocessor.create_features(grupos))
