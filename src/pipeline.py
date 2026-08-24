@@ -145,7 +145,7 @@ class LibertadoresPipeline:
         print("   • notebooks/01_eda_libertadores.ipynb - Análise exploratória")
         print("   • notebooks/02_feature_engineering.ipynb - Engenharia de features")
         print("   • notebooks/03_fbref_elencos.ipynb - Elencos e índices FBref")
-        print("   • notebooks/05_analise_arbitragem_odds.ipynb - Arbitragem e odds")
+        print("   • notebooks/04_analise_arbitragem_odds.ipynb - Arbitragem e odds")
         print("\n" + "=" * 70)
 
         return predictions
@@ -154,6 +154,11 @@ class LibertadoresPipeline:
 def main():
     """Função principal."""
     import argparse
+    import sys
+
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+        sys.stderr.reconfigure(encoding="utf-8", errors="replace")
 
     parser = argparse.ArgumentParser(
         description="Pipeline Libertadores 2026 - Previsão de Resultados"
