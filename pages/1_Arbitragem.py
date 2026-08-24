@@ -35,10 +35,18 @@ st.caption(
 # --------------------------------------------------------------------------- #
 # Dados
 # --------------------------------------------------------------------------- #
-pre = Preprocessor()
-partidas = load_estatisticas()          # com colunas derivadas (totais)
-resumo = load_referee_summary()          # médias por árbitro
-rigor = pre.add_rigor_groups(partidas)   # tercis de rigor por média de faltas
+try:
+    pre = Preprocessor()
+    partidas = load_estatisticas()          # com colunas derivadas (totais)
+    resumo = load_referee_summary()          # médias por árbitro
+    rigor = pre.add_rigor_groups(partidas)   # tercis de rigor por média de faltas
+except FileNotFoundError:
+    st.warning(
+        "Esta página exige estatísticas detalhadas reais (**API_FUTEBOL_KEY**). "
+        "Configure a chave no `.env` e rode o pipeline (`python src/pipeline.py`), "
+        "ou defina `ALLOW_EXAMPLE_DATA=1` para usar a base sintética em desenvolvimento."
+    )
+    st.stop()
 
 ARBITROS = sorted(resumo["arbitro"].tolist())
 PAISES = sorted(resumo["arbitro_pais"].dropna().unique().tolist())

@@ -36,7 +36,16 @@ st.caption(
 )
 
 pre = Preprocessor()
-cmp = load_model_market()  # modelo + odds + resultado por partida
+try:
+    cmp = load_model_market()  # modelo + odds + resultado por partida
+except FileNotFoundError:
+    st.warning(
+        "Esta página exige odds reais (**BSD_API**) e estatísticas "
+        "(**API_FUTEBOL_KEY**). Configure as chaves no `.env` e rode o pipeline "
+        "(`python src/pipeline.py`), ou defina `ALLOW_EXAMPLE_DATA=1` para usar "
+        "a base sintética em desenvolvimento."
+    )
+    st.stop()
 
 if cmp.empty:
     st.error("Nenhum dado de odds disponível. Execute o pipeline "
