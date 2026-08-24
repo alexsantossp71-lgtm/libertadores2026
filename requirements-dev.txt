@@ -1,0 +1,5 @@
+# Dependências de desenvolvimento, testes e análise (não são necessárias em deploy).
+-r requirements.txt
+pytest>=7.0.0
+jupyter>=1.0.0
+ruff>=0.4.0

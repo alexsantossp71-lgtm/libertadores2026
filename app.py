@@ -153,13 +153,8 @@ def load_data() -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     return grupos_features, oitavas, quartas
 
 
-@st.cache_resource(show_spinner="Ajustando modelo de Poisson...")
-def fit_model(
-    grupos_features: pd.DataFrame, home_advantage: float, max_goals: int
-) -> PoissonScoreModel:
-    """Ajusta o Poisson e mistura os índices de elenco (FBref + forma)."""
-    model = PoissonScoreModel(home_advantage=home_advantage, max_goals=max_goals)
-    model.fit(grupos_features)
+def _apply_elenco(model: PoissonScoreModel) -> PoissonScoreModel:
+    """Mistura os índices de elenco (FBref + forma) no modelo já ajustado."""
     try:
         from elenco_analysis import analisar_elencos, aplicar_elenco_ao_poisson, forma_recente
 
@@ -167,6 +162,16 @@ def fit_model(
     except FileNotFoundError:
         pass
     return model
+
+
+@st.cache_resource(show_spinner="Ajustando modelo de Poisson...")
+def fit_model(
+    grupos_features: pd.DataFrame, home_advantage: float, max_goals: int
+) -> PoissonScoreModel:
+    """Ajusta o Poisson e mistura os índices de elenco (FBref + forma)."""
+    model = PoissonScoreModel(home_advantage=home_advantage, max_goals=max_goals)
+    model.fit(grupos_features)
+    return _apply_elenco(model)
 
 
 def flag(pais: str) -> str:
@@ -301,14 +306,7 @@ def monte_carlo_bracket(
     seed: int = 42,
 ) -> pd.DataFrame:
     """Simula quartas → semis → final N vezes e retorna probabilidades por fase."""
-    model = PoissonScoreModel(home_advantage=home_advantage, max_goals=max_goals)
-    model.fit(grupos_features)
-    try:
-        from elenco_analysis import analisar_elencos, aplicar_elenco_ao_poisson, forma_recente
-
-        aplicar_elenco_ao_poisson(model, analisar_elencos(), forma=forma_recente())
-    except FileNotFoundError:
-        pass
+    model = fit_model(grupos_features, home_advantage, max_goals)
 
     rng = np.random.default_rng(seed)
     teams = sorted({t for pair in pairs for t in pair})
