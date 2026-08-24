@@ -1,6 +1,5 @@
 """Testes do cliente de odds da Bzzoiro (parsing e fallback offline)."""
 
-import os
 
 import pytest
 

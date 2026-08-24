@@ -68,8 +68,8 @@ def test_oitavas_2026_reais(partidas):
     assert vencedores["Fluminense"] == "Fluminense"          # 1-1, pên. 4-5
     assert oitavas.loc[oitavas["Time1"] == "Estudiantes", "Vencedor"].iloc[0] == "Estudiantes"
     assert oitavas.loc[oitavas["Time1"] == "Platense", "Vencedor"].iloc[0] == "Platense"
-    assert oitavas.loc[oitadas := oitavas["Time1"] == "Palmeiras", "Vencedor"].iloc[0] == "Palmeiras"
-    assert oitavas.loc[oitadas := oitavas["Time1"] == "Cruzeiro", "Vencedor"].iloc[0] == "Flamengo"
+    assert oitavas.loc[oitavas["Time1"] == "Palmeiras", "Vencedor"].iloc[0] == "Palmeiras"
+    assert oitavas.loc[oitavas["Time1"] == "Cruzeiro", "Vencedor"].iloc[0] == "Flamengo"
     # Tolima x IDV: volta em 25/08 — não pode ter vencedor declarado
     pendente = oitavas[oitavas.apply(lambda r: "Tolima" in (r["Time1"], r["Time2"]), axis=1)]
     assert pendente["Vencedor"].iloc[0] == "(em andamento)"

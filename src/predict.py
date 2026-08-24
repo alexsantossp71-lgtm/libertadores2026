@@ -13,7 +13,7 @@ Os CSVs de auditoria guardam o cenário-base e o cenário com elenco lado a lado
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Dict, List
 
 import pandas as pd
 

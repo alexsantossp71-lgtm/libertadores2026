@@ -39,7 +39,7 @@ class LibertadoresScraper:
             build_dataset()
         tabelas = build_app_tables()
         print(
-            "✅ Dados reais carregados: "
+            "[OK] Dados reais carregados: "
             f"{len(tabelas['grupos'])} times na fase de grupos, "
             f"{len(tabelas['oitavas'])} confrontos de oitavas, "
             f"{len(tabelas['quartas'])} confrontos de quartas."

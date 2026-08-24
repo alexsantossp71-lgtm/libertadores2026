@@ -1,10 +1,6 @@
 """Testes do cliente da API Futebol (parsing e fallback offline)."""
 
-import json
-import os
 
-import pandas as pd
-import pytest
 
 from api_futebol_client import (
     ApiFutebolClient,

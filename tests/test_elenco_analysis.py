@@ -1,6 +1,5 @@
 """Testes da análise de elencos e do ajuste de Poisson."""
 
-from pathlib import Path
 
 import pandas as pd
 import pytest

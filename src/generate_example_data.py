@@ -28,7 +28,6 @@ fallback para o pipeline, para o dashboard e para o notebook de análise.
 
 from __future__ import annotations
 
-import unicodedata
 from pathlib import Path
 from typing import Dict, List, Tuple
 

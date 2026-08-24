@@ -37,7 +37,6 @@ import pandas as pd
 from fbref_features import (
     confronto_indices,
     indices_completos,
-    indices_elencos,
     indices_jogadores,
 )
 from fbref_scraper import load_elencos, load_jogadores

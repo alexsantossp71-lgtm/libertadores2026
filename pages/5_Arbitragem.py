@@ -15,7 +15,6 @@ import sys
 from pathlib import Path
 
 import numpy as np
-import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 import streamlit as st
@@ -280,7 +279,7 @@ with t1:
         delta_color="inverse" if p_anova < 0.05 else "normal",
     )
     st.caption(
-        f"Médias de gols por grupo — "
+        "Médias de gols por grupo — "
         + " · ".join(
             f"{g}: {rigor[rigor['grupo_rigor'] == g]['total_gols'].mean():.2f}"
             for g in rigor["grupo_rigor"].dropna().unique()
