@@ -287,17 +287,17 @@ with st.sidebar:
     st.markdown("## 📑 Páginas")
     st.page_link("app.py", label="🏠 Início — Previsões", icon="⚽")
     st.page_link(
-        "pages/5_Arbitragem.py",
+        "pages/1_Arbitragem.py",
         label="🟨 Arbitragem e Estatísticas",
         icon="🟨",
     )
     st.page_link(
-        "pages/6_Odds.py",
+        "pages/2_Odds.py",
         label="📊 Odds e Probabilidades de Mercado",
         icon="📊",
     )
     st.page_link(
-        "pages/7_Elencos.py",
+        "pages/3_Elencos.py",
         label="👕 Análise de Elencos",
         icon="👕",
     )

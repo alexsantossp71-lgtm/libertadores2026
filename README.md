@@ -1,4 +1,4 @@
-# ⚽ Libertadores 2026 - Previsão de Resultados
+﻿# ⚽ Libertadores 2026 - Previsão de Resultados
 
 [![Python](https://img.shields.io/badge/Python-3.9%2B-blue)](https://python.org)
 [![Pandas](https://img.shields.io/badge/Pandas-2.0%2B-orange)](https://pandas.pydata.org/)
@@ -409,11 +409,11 @@ respeitando o chaveamento oficial: **QF1 × QF2** e **QF3 × QF4** nas semifinai
      ambos marcam, clean sheet);
    - 🎲 **Monte Carlo**: simulação do mata-mata (quartas → título) com jogos de
      ida e volta e disputa de pênaltis;
-   - 🟨 **Arbitragem e Estatísticas** (`pages/5_Arbitragem.py`): perfil por
+   - 🟨 **Arbitragem e Estatísticas** (`pages/1_Arbitragem.py`): perfil por
      árbitro, top 10 por faltas, dispersão faltas × gols, boxplot de cartões
      (com filtro por país), radar de comparação entre dois árbitros, testes
      estatísticos (ANOVA e Pearson) e tabela ordenável;
-   - 📊 **Odds e Probabilidades de Mercado** (`pages/6_Odds.py`): comparação
+   - 📊 **Odds e Probabilidades de Mercado** (`pages/2_Odds.py`): comparação
      modelo × odds lado a lado, indicador de quem acertou nas divergências,
      gráfico de diferença por partida, combinação inteligente modelo + odds
      (com limiar ajustável) e métricas de acurácia/Brier Score;
@@ -448,9 +448,9 @@ respeitando o chaveamento oficial: **QF1 × QF2** e **QF3 × QF4** nas semifinai
 libertadores2026/
 ├── app.py                 # 🖥️ Dashboard interativo (Streamlit)
 ├── pages/
-│   ├── 5_Arbitragem.py    # 🟨 Análise de arbitragem e estatísticas
-│   ├── 6_Odds.py          # 📊 Odds e probabilidades de mercado
-│   └── 7_Elencos.py       # 👕 Análise de elencos (FBref + forma)
+│   ├── 1_Arbitragem.py    # 🟨 Análise de arbitragem e estatísticas
+│   ├── 2_Odds.py          # 📊 Odds e probabilidades de mercado
+│   └── 3_Elencos.py       # 👕 Análise de elencos (FBref + forma)
 ├── .streamlit/
 │   └── config.toml        # Tema e configuração do dashboard
 ├── data/
@@ -504,8 +504,8 @@ libertadores2026/
 ## 🚀 Próximos Passos (Melhorias Futuras)
 
 - [x] **Dashboard Interativo**: aplicativo **Streamlit** (`app.py`) com previsões, simulador de confrontos e Monte Carlo do mata-mata.
-- [x] **Dados de Odds**: odds 1X2 da **Bzzoiro Sports Data** com probabilidades implícitas e comparação com o modelo (`pages/6_Odds.py`).
-- [x] **Análise de Arbitragem**: estatísticas detalhadas da **API Futebol** (faltas, cartões, posse, passes, finalizações) com testes estatísticos (`pages/5_Arbitragem.py`).
+- [x] **Dados de Odds**: odds 1X2 da **Bzzoiro Sports Data** com probabilidades implícitas e comparação com o modelo (`pages/2_Odds.py`).
+- [x] **Análise de Arbitragem**: estatísticas detalhadas da **API Futebol** (faltas, cartões, posse, passes, finalizações) com testes estatísticos (`pages/1_Arbitragem.py`).
 - [ ] **Automação**: workflow do GitHub Actions executando o pipeline diariamente com commit automático (ainda não criado).
 - [x] **Estatísticas de elencos/jogadores (FBref)**: raspagem educada + snapshot real 2026 + índices de força ofensiva / pressão defensiva (`src/fbref_scraper.py`, `src/fbref_features.py`).
 - [ ] **Passing network / heatmap**: exige evento por partida (StatsBomb/Sofascore) — a FBref da Libertadores não publica isso.
