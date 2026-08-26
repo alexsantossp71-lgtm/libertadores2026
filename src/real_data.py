@@ -221,6 +221,112 @@ _CANONICAL: Dict[str, str] = {
     "fenix": "Fénix",
     "sud america": "Sud América",
     "rentistas": "Rentistas",
+    # --- cobertura de normalização (auditoria revisao-dados, 2026) ---
+    "2 de mayo": "2 de Mayo",
+    "aa argentinos juniors": "Argentinos Juniors",
+    "academia puerto cabello": "Academia Puerto Cabello",
+    "america mg": "América MG",
+    "arsenal de sarandi": "Arsenal de Sarandí",
+    "atlas guadalajara": "Atlas",
+    "atletico junior": "Junior",
+    "atletico tucuman": "Atlético Tucumán",
+    "ayacucho fc": "Ayacucho",
+    "banfield": "Banfield",
+    "botafogo rj": "Botafogo",
+    "ca central cordoba": "Central Córdoba",
+    "ca huracan": "Huracán",
+    "ca mineiro": "Atlético Mineiro",
+    "ca paranaense": "Athletico-PR",
+    "ca patronato": "Patronato",
+    "ca san lorenzo de almagro": "San Lorenzo",
+    "cd cobresal": "Cobresal",
+    "cd godoy cruz antonio tomba": "Godoy Cruz",
+    "cd independiente medellin": "Independiente Medellín",
+    "cd maldonado": "Maldonado",
+    "cdc atletico nacional": "Atlético Nacional",
+    "cdp curico unido": "Curicó Unido",
+    "cdp junior fc": "Junior",
+    "caracas fc": "Caracas",
+    "cerro largo": "Cerro Largo",
+    "chapecoense": "Chapecoense",
+    "club aurora": "Aurora",
+    "club leon": "León",
+    "club nacional potosi": "Nacional Potosí",
+    "club nacional de football": "Nacional (URU)",
+    "club san jose": "San José",
+    "club social y deportivo independiente jose teran": "Independiente del Valle",
+    "club tijuana": "Tijuana",
+    "cobresal": "Cobresal",
+    "colon de santa fe": "Colón",
+    "corinthians sp": "Corinthians",
+    "cruz azul": "Cruz Azul",
+    "cusco fc": "Cusco FC",
+    "defensa y justicia": "Defensa y Justicia",
+    "deportes iquique": "Iquique",
+    "deportivo anzoategui": "Deportivo Anzoátegui",
+    "deportivo binacional": "Deportivo Binacional",
+    "deportivo cali": "Deportivo Cali",
+    "deportivo capiata": "Deportivo Capiatá",
+    "deportivo guadalajara": "Guadalajara",
+    "deportivo la guaira": "Deportivo La Guaira",
+    "deportivo la guaira fc": "Deportivo La Guaira",
+    "deportivo lara": "Deportivo Lara",
+    "deportivo municipal": "Deportivo Municipal",
+    "deportivo pereira": "Deportivo Pereira",
+    "deportivo quito": "Deportivo Quito",
+    "deportivo toluca": "Toluca",
+    "estudiantes de merida": "Estudiantes de Mérida",
+    "everton": "Everton",
+    "fortaleza ce": "Fortaleza",
+    "fortaleza ec": "Fortaleza",
+    "godoy cruz": "Godoy Cruz",
+    "gremio fbpa": "Grêmio",
+    "gremio porto alegre": "Grêmio",
+    "huracan": "Huracán",
+    "independiente medellin": "Independiente Medellín",
+    "independiente petrolero": "Independiente Petrolero",
+    "jorge wilstermann": "Jorge Wilstermann",
+    "juan aurich": "Juan Aurich",
+    "liverpool": "Liverpool (URU)",
+    "liverpool fc": "Liverpool (URU)",
+    "magallanes": "Magallanes",
+    "metropolitanos fc": "Metropolitanos",
+    "millonarios fc": "Millonarios",
+    "mineros de guayana": "Mineros de Guayana",
+    "monarcas morelia": "Morelia",
+    "montevideo city torque": "Montevideo City",
+    "montevideo wanderers": "Montevideo Wanderers",
+    "newells old boys": "Newell's Old Boys",
+    "newell s old boys": "Newell's Old Boys",
+    "o higgins": "O'Higgins",
+    "o higgins fc": "O'Higgins",
+    "oriente petrolero": "Oriente Petrolero",
+    "portuguesa fc": "Portuguesa",
+    "puebla fc": "Puebla",
+    "pumas unam": "Pumas UNAM",
+    "rb bragantino": "Red Bull Bragantino",
+    "real garcilaso": "Real Garcilaso",
+    "red bull bragantino": "Red Bull Bragantino",
+    "rionegro aguilas": "Rionegro Águilas",
+    "royal pari": "Royal Pari",
+    "santiago wanderers": "Santiago Wanderers",
+    "santos fc": "Santos",
+    "santos laguna": "Santos Laguna",
+    "sport boys warnes": "Sport Boys Warnes",
+    "sao paulo fc": "São Paulo",
+    "talleres de cordoba": "Talleres",
+    "tigre": "Tigre",
+    "trujillanos fc": "Trujillanos",
+    "uanl tigres": "Tigres UANL",
+    "universidad central de venezuela fc": "Universidad Central (VEN)",
+    "universidad cesar vallejo": "Universidad César Vallejo",
+    "universidad de concepcion": "Universidad de Concepción",
+    "universitario de sucre": "Universitario de Sucre",
+    "union espanola": "Unión Española",
+    "union la calera": "Unión La Calera",
+    "vasco da gama rj": "Vasco",
+    "zamora fc": "Zamora",
+    "zulia fc": "Zulia",
 }
 
 
@@ -250,6 +356,24 @@ def short_name(name: str) -> str:
     if stripped in _CANONICAL:
         return _CANONICAL[stripped]
     return name.strip()
+
+
+def is_unmapped(name: str) -> bool:
+    """True se o nome cru não tem correspondência em ``_CANONICAL`` (nem via prefixos).
+
+    Diferencia times que mapeiam para si mesmos (ex.: ``Boca Juniors`` →
+    ``Boca Juniors``, que ESTÁ mapeado) de times realmente órfãos (ex.:
+    ``Grêmio Porto Alegre``, que não tem entrada curta).
+    """
+    key = normalize_name(name)
+    if key in _CANONICAL:
+        return False
+    for prefix in _PREFIXES:
+        p = normalize_name(prefix)
+        if p and key.startswith(p + " "):
+            if key[len(p) + 1:].strip() in _CANONICAL:
+                return False
+    return True
 
 
 # --------------------------------------------------------------------------- #
@@ -974,6 +1098,209 @@ def validate(partidas: pd.DataFrame) -> Tuple[List[str], List[str]]:
 
 
 # --------------------------------------------------------------------------- #
+# Auditoria de qualidade de dados (comando `review`)
+# --------------------------------------------------------------------------- #
+# Data de referência do snapshot de dados: partidas com data >= a esta são
+# tratadas como "futuras" (placar ausente é esperado, não um defeito).
+DATA_CORTE = pd.Timestamp("2026-08-26")
+
+
+def collect_warnings(output: Optional[Path] = None) -> List[str]:
+    """Retorna TODOS os avisos de parsing dos arquivos openfootball (sem truncar).
+
+    Diferente de ``build_dataset`` (que imprime só os 10 primeiros), esta função
+    devolve a lista completa — base para o orçamento de avisos testável.
+    """
+    files = sorted(OPENFOOTBALL_DIR.glob("*_copal.txt"))
+    if not files:
+        raise FileNotFoundError(
+            f"Nenhum arquivo openfootball em {OPENFOOTBALL_DIR}. "
+            "Dados reais são obrigatórios — nada é simulado."
+        )
+    all_warnings: List[str] = []
+    for f in files:
+        _, warns = parse_openfootball_file(f)
+        all_warnings.extend(warns)
+    if output is not None:
+        output.parent.mkdir(parents=True, exist_ok=True)
+        output.write_text(
+            "\n".join(all_warnings) + ("\n" if all_warnings else ""), encoding="utf-8"
+        )
+    return all_warnings
+
+
+def _cat_integridade(partidas: pd.DataFrame) -> dict:
+    erros, avisos = validate(partidas)
+    return {"erros": erros, "avisos": avisos, "info": []}
+
+
+def _cat_completude(partidas: pd.DataFrame) -> dict:
+    erros, avisos, info = [], [], []
+    missing = partidas[partidas["gols_mandante"].isna()]
+    for _, r in missing.iterrows():
+        mandante, visitante = r["mandante"], r["visitante"]
+        fase, temporada = r["fase"], int(r["temporada"])
+        if pd.isna(r["data"]) or r["data"] is None:
+            avisos.append(
+                f"{temporada} {fase} {mandante}x{visitante}: sem data e sem placar (jogo futuro?)"
+            )
+            continue
+        dt = pd.to_datetime(r["data"])
+        if dt >= DATA_CORTE:
+            info.append(
+                f"{temporada} {fase} {mandante}x{visitante} ({r['data']}): "
+                "jogo futuro (placar ausente esperado)"
+            )
+            continue
+        # jogo no passado sem placar: só é aceitável se o confronto está em andamento
+        par = _pair(mandante, visitante)
+        tie = partidas[
+            (partidas["temporada"] == temporada)
+            & (partidas["fase"] == fase)
+            & partidas.apply(
+                lambda x: _pair(x["mandante"], x["visitante"]) == par, axis=1
+            )
+        ]
+        if tie["gols_mandante"].notna().any():
+            info.append(
+                f"{temporada} {fase} {mandante}x{visitante} ({r['data']}): "
+                "confronto em andamento (ida/volta pendente)"
+            )
+        else:
+            erros.append(
+                f"{temporada} {fase} {mandante}x{visitante} ({r['data']}): "
+                "placar ausente em jogo já disputado"
+            )
+    return {"erros": erros, "avisos": avisos, "info": info}
+
+
+def _cat_validade(partidas: pd.DataFrame) -> dict:
+    erros, avisos, info = [], [], []
+    played = partidas[partidas["gols_mandante"].notna()]
+    if (played["gols_mandante"] < 0).any() or (played["gols_visitante"] < 0).any():
+        erros.append("existem placares negativos")
+    if (played["gols_mandante"] > 30).any() or (played["gols_visitante"] > 30).any():
+        erros.append("existem placares acima do teto plausível (30 gols)")
+    fases_validas = {"Qualifying", "Group", "Playoffs", "Finals"}
+    for f in sorted(set(partidas["fase"].dropna()) - fases_validas):
+        avisos.append(f"fase não canônica encontrada: '{f}'")
+    datas = partidas["data"].dropna().astype(str)
+    for d in datas[~datas.str.match(r"^\d{4}-\d{2}-\d{2}$")].unique():
+        erros.append(f"data em formato inválido (não AAAA-MM-DD): '{d}'")
+    for col in ("pais_mandante", "pais_visitante"):
+        bad = partidas[col].dropna().astype(str)
+        for p in bad[~bad.str.match(r"^[A-Z]{3}$")].unique():
+            avisos.append(f"{col}='{p}': código de país não é de 3 letras")
+    pernas = partidas["perna"].dropna()
+    bad_perna = sorted(set(pernas[~pernas.isin([1, 2])]))
+    if bad_perna:
+        avisos.append(f"perna com valor(es) fora de {{1,2}}: {bad_perna}")
+    return {"erros": erros, "avisos": avisos, "info": info}
+
+
+def _cat_consistencia(partidas: pd.DataFrame) -> dict:
+    erros, avisos, info = [], [], []
+    played = partidas[partidas["gols_mandante"].notna()]
+    subset = ["temporada", "fase", "rodada", "data", "mandante", "visitante",
+              "gols_mandante", "gols_visitante"]
+    dup = played.duplicated(subset=subset)
+    if dup.any():
+        d = played[dup]
+        erros.append(
+            f"{len(d)} partidas duplicadas (checagem ampla), ex.: "
+            + "; ".join(
+                f"{r.temporada} {r.fase} {r.mandante}x{r.visitante} {r.data}"
+                for r in d.head(3).itertuples()
+            )
+        )
+    for col_m, col_c in (("mandante", "nome_curto_mandante"),
+                         ("visitante", "nome_curto_visitante")):
+        for t in partidas[partidas[col_m].map(is_unmapped)][col_m].unique():
+            avisos.append(f"time não mapeado em _CANONICAL: '{t}'")
+    # deriva dos artefatos 2026
+    raw_map = {
+        "grupos": RAW_OUT_DIR / "grupos_libertadores_2026.csv",
+        "oitavas": RAW_OUT_DIR / "oitavas_resultados.csv",
+        "quartas": RAW_OUT_DIR / "confrontos_quartas.csv",
+    }
+    existing = {k: pd.read_csv(v) for k, v in raw_map.items() if v.exists()}
+    if existing:
+        try:
+            rebuilt = build_app_tables()
+            for k, ex in existing.items():
+                rb = rebuilt[k]
+                if list(ex.columns) != list(rb.columns):
+                    ex = ex[rb.columns]
+                if ex.to_csv(index=False).strip() != rb.to_csv(index=False).strip():
+                    avisos.append(f"artefato 2026 '{k}' divergiu do rebuild (deriva detectada)")
+        except Exception as e:  # noqa: BLE001
+            avisos.append(f"não foi possível verificar deriva dos artefatos 2026: {e}")
+    else:
+        info.append("artefatos 2026 não encontrados em data/raw/ (não verificado)")
+    return {"erros": erros, "avisos": avisos, "info": info}
+
+
+def _cat_entre_fontes(partidas: pd.DataFrame) -> dict:
+    erros, avisos, info = [], [], []
+    base_frames = []
+    for f in sorted(OPENFOOTBALL_DIR.glob("*_copal.txt")):
+        if f.name.startswith("2026"):
+            df, _ = parse_openfootball_file(f)
+            base_frames.append(df)
+    if not base_frames:
+        info.append("sem arquivos openfootball de 2026 para comparar")
+        return {"erros": erros, "avisos": avisos, "info": info}
+    base = pd.concat(base_frames, ignore_index=True)
+    for _, r in partidas[
+        (partidas["temporada"] == 2026) & partidas["gols_mandante"].notna()
+    ].iterrows():
+        mandante, visitante, data = r["mandante"], r["visitante"], r["data"]
+        bm = base[(base["mandante"] == mandante) & (base["visitante"] == visitante)
+                  & (base["data"] == data)]
+        if bm.empty or pd.isna(bm.iloc[0]["gols_mandante"]):
+            continue
+        b = bm.iloc[0]
+        if (int(b["gols_mandante"]) != int(r["gols_mandante"])
+                or int(b["gols_visitante"]) != int(r["gols_visitante"])):
+            avisos.append(
+                f"2026 {mandante}x{visitante} ({data}): openfootball "
+                f"{int(b['gols_mandante'])}-{int(b['gols_visitante'])} vs "
+                f"suplemento {int(r['gols_mandante'])}-{int(r['gols_visitante'])} (fonte={r['fonte']})"
+            )
+    return {"erros": erros, "avisos": avisos, "info": info}
+
+
+def review(partidas: pd.DataFrame) -> dict:
+    """Orquestra a auditoria de qualidade e devolve um relatório estruturado.
+
+    Cada categoria tem ``erros``, ``avisos`` e ``info``. A categoria
+    ``integridade_validate`` reproduz o resultado de :func:`validate` (que NÃO é
+    modificada por esta auditoria).
+    """
+    return {
+        "integridade_validate": _cat_integridade(partidas),
+        "completude": _cat_completude(partidas),
+        "validade": _cat_validade(partidas),
+        "consistencia": _cat_consistencia(partidas),
+        "entre_fontes": _cat_entre_fontes(partidas),
+    }
+
+
+def _format_review(rel: dict) -> str:
+    linhas = ["=== REVISÃO DE QUALIDADE DE DADOS ==="]
+    for cat, res in rel.items():
+        n_e, n_a, n_i = len(res["erros"]), len(res["avisos"]), len(res["info"])
+        linhas.append(f"\n[{cat}]  erros={n_e} avisos={n_a} info={n_i}")
+        for e in res["erros"]:
+            linhas.append(f"  ❌ {e}")
+        for a in res["avisos"]:
+            linhas.append(f"  ⚠️  {a}")
+        for i in res["info"]:
+            linhas.append(f"  ℹ️  {i}")
+    return "\n".join(linhas)
+
+
+# --------------------------------------------------------------------------- #
 # Tabelas consumidas pelo dashboard (app.py / preprocessing.load_data)
 # --------------------------------------------------------------------------- #
 RAW_OUT_DIR = ROOT_DIR / "data" / "raw"
@@ -1018,8 +1345,14 @@ def build_app_tables(temporada: int = 2026) -> Dict[str, pd.DataFrame]:
 
 
 def main(argv: Optional[List[str]] = None) -> int:
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8")
+        sys.stderr.reconfigure(encoding="utf-8")
     parser = argparse.ArgumentParser(description="Dados reais da Libertadores")
-    parser.add_argument("command", choices=["build", "validate", "resumo", "tabelas"])
+    parser.add_argument(
+        "command",
+        choices=["build", "validate", "resumo", "tabelas", "review", "review_warnings"],
+    )
     args = parser.parse_args(argv)
 
     if args.command == "tabelas":
@@ -1029,6 +1362,20 @@ def main(argv: Optional[List[str]] = None) -> int:
         print(f"   • oitavas: {len(tabelas['oitavas'])} confrontos")
         print(f"   • quartas: {len(tabelas['quartas'])} confrontos")
         return 0
+
+    if args.command == "review_warnings":
+        warns = collect_warnings(DATASET_PATH.with_name("partidas_libertadores.warnings.txt"))
+        print(f"✅ {len(warns)} avisos de parsing capturados (completos, sem truncar)")
+        print(f"   → {DATASET_PATH.with_name('partidas_libertadores.warnings.txt')}")
+        return 0
+
+    if args.command == "review":
+        partidas = load_partidas()
+        rel = review(partidas)
+        print(_format_review(rel))
+        total_erros = sum(len(c["erros"]) for c in rel.values())
+        print(f"\n→ Total de erros: {total_erros}")
+        return 1 if total_erros else 0
 
     if args.command == "build":
         partidas = build_dataset()

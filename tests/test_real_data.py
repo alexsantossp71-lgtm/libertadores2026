@@ -6,8 +6,11 @@ import pytest
 from src.real_data import (
     QUARTAS_PATH,
     _parse_tail,
+    collect_warnings,
+    is_unmapped,
     knockout_results,
     load_partidas,
+    review,
     standings,
     validate,
 )
@@ -103,3 +106,61 @@ def test_campeoes_historicos_batem_com_a_realidade(partidas):
         finais = finais[finais["Volta"] != "—"]  # finais de 2 jogos ou jogo único
         campeoes = set(finais["Vencedor"])
         assert campeao in campeoes or not campeoes, f"{temporada}: {campeoes}"
+
+
+def test_avisos_nao_truncados():
+    """collect_warnings() deve devolver TODOS os avisos de parsing, não só 10."""
+    warns = collect_warnings()
+    assert isinstance(warns, list)
+    # orçamento conhecido: 0 avisos de parsing (build_dataset já trunca em 10,
+    # mas a auditoria captura o total real — aqui esperado ser 0)
+    assert len(warns) == 0, f"avisos de parsing inesperados: {warns}"
+
+
+def test_cobertura_normalizacao(partidas):
+    """Nenhum time presente no dataset pode ficar sem entrada em _CANONICAL."""
+    times = pd.concat([partidas["mandante"], partidas["visitante"]]).dropna().unique()
+    sem_map = [t for t in times if is_unmapped(t)]
+    assert sem_map == [], f"times não mapeados em _CANONICAL: {sem_map}"
+
+
+def test_completude_sem_inesperados(partidas):
+    """Completude: só avisos/info esperados (jogos futuros), zero erros."""
+    rel = review(partidas)
+    cat = rel["completude"]
+    assert cat["erros"] == [], f"erros de completude inesperados: {cat['erros']}"
+    # todo aviso deve ser de jogo futuro (sem data) ou em andamento
+    for a in cat["avisos"]:
+        assert "jogo futuro" in a or "em andamento" in a, f"aviso inesperado: {a}"
+
+
+def test_validade_dominio(partidas):
+    """Validade: domínios de gols, fase, data, país e perna respeitados."""
+    rel = review(partidas)
+    cat = rel["validade"]
+    assert cat["erros"] == [], f"erros de validade inesperados: {cat['erros']}"
+    # não deve haver fase não canônica nem código de país inválido
+    for a in cat["avisos"]:
+        assert ("fase não canônica" in a) or ("país" in a) or ("perna" in a), \
+            f"aviso de validade inesperado: {a}"
+
+
+def test_sem_duplicatas_amplas(partidas):
+    """Consistência: não há partidas duplicadas na checagem ampla."""
+    rel = review(partidas)
+    cat = rel["consistencia"]
+    assert cat["erros"] == [], f"erros de consistência inesperados: {cat['erros']}"
+
+
+def test_concordancia_entre_fontes(partidas):
+    """Entre fontes: openfootball 2026 concorda com os suplementos."""
+    rel = review(partidas)
+    cat = rel["entre_fontes"]
+    assert cat["avisos"] == [], f"divergências entre fontes: {cat['avisos']}"
+
+
+def test_review_sem_erros_novos(partidas):
+    """O review completo não deve introduzir erros em nenhuma categoria."""
+    rel = review(partidas)
+    for nome, cat in rel.items():
+        assert cat["erros"] == [], f"erros em '{nome}': {cat['erros']}"
