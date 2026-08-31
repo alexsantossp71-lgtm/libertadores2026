@@ -1,6 +1,6 @@
 # Relatório de Revisão de Dados — Libertadores 2026
 
-**Data da auditoria:** 2026-08-26
+**Data da auditoria:** 2026-08-26 (atualizado 2026-08-30)
 **Escopo:** `data/historical/partidas_libertadores.csv` (2012–2026) + gerador `src/real_data.py` + artefatos 2026 derivados.
 **Fora de escopo:** `data/processed/*`, código de modelo (`model.py`, `poisson.py`, `predict.py`, `elenco_analysis.py`).
 
@@ -36,8 +36,12 @@ A auditoria é implementada em `src/real_data.py`:
 | completude | 0 | 0 | 1 |
 | validade | 0 | 0 | 0 |
 | consistência | 0 | 0 | 0 |
-| entre_fontes | 0 | 0 | 0 |
+| entre_fontes | 0 | 0 | 1 |
 | **Total de erros** | **0** | | |
+
+> O info de entre_fontes resume a cobertura da concordância: **125 partidas 2026 comparadas
+> entre openfootball e suplementos, 0 divergências** (`_cat_entre_fontes`,
+> `src/real_data.py:1292+`).
 
 - **Partidas no dataset:** 2.227 (2012–2026, 15 temporadas)
 - **Com placar:** 2.226 — **Sem placar:** 1 (Tolima×IDV, volta em 25/08/2026, em andamento)
@@ -56,6 +60,26 @@ indefinido). Exemplos:
 
 Não há erros de integridade (gols, tabelas e jogos consistentes — validação OK).
 
+## 4.1a Tabela de achados (severidade / status / evidência)
+
+| # | Achado | Severidade | Status | Evidência |
+|---|--------|-----------|--------|-----------|
+| A1 | 24 confrontos 2013–2024 com agregado empatado e pênaltis não registrados na fonte (vencedor indefinido) | aviso | **known** — upstream openfootball (`.txt` imutável); sem fonte alternativa em escopo | `validate()` check 4 (`src/real_data.py:~1090`); saída de `review` → integridade_validate |
+| A2 | Tolima×IDV, volta 25/08/2026 sem placar | info | **known/pending** — jogo em andamento; a checagem de completude reclassificará após a disputa | `review` → completude; `tests/test_real_data.py::test_oitavas_2026_reais` |
+| A3 | Placares das oitavas 2026 existem apenas em espn/fbref (openfootball guarda só os fixtures) | info | **known** — coberto pela concordância: 125 partidas comparadas, 0 divergências | `review` → entre_fontes; `_cat_entre_fontes` (`src/real_data.py:1282+`) |
+| A4 | Cobertura de normalização, duplicatas amplas, deriva de `data/raw/` | — | **corrigido/verde** — 0 ocorrências após as correções da seção 5 | `review` → consistencia (0/0/0); `tests/test_real_data.py::test_sem_duplicatas_amplas`, `::test_cobertura_normalizacao` |
+
+### Riscos residuais
+
+1. **`data/processed/*` fora de escopo** — arquivos derivados de APIs (`libertadores_odds.csv`,
+   estatísticas detalhadas, `fbref_*.csv`) dependem de chaves ausentes em dev e não foram
+   auditados nesta revisão.
+2. **Vencedores históricos indefinidos (A1)** — estatísticas que precisem do vencedor dos 24
+   confrontos afetados devem tratá-los como indefinidos; não há impacto nas tabelas de grupos
+   (invariante `sum(GP)==sum(GC)` verde em todas as temporadas).
+3. **Dados futuros de 2026** — quartas em diante entram sem placar conforme o calendário; a
+   completude classifica-os como esperados pela data de corte (`DATA_CORTE`, `src/real_data.py:1105`).
+
 ### 4.2 Completude — 0 erros, 0 avisos, 1 info
 O único item é informativo: `2026 Playoffs CAR Independiente del Valle x CD Tolima
 (2026-08-25): confronto em andamento (ida/volta pendente)`. Placar ausente esperado
@@ -73,11 +97,17 @@ códigos de país de 3 letras, perna ∈ {1,2}.
 - Artefatos 2026 (`grupos`, `oitavas`, `quartas`) reproduzem exatamente o rebuild
   (`build_app_tables`) — sem deriva.
 
-### 4.5 Entre Fontes — 0 erros, 0 avisos
-Openfootball 2026 concorda com os suplementos ESPN/FBref para todos os jogos com placar
-(sem divergências de placar).
+### 4.5 Entre Fontes — 0 erros, 0 avisos, 1 info
+Openfootball 2026 concorda com os suplementos ESPN/FBref para todos os jogos com placar:
+**125 partidas comparadas, 0 divergências**. As oitavas (idas espn, voltas fbref, swap
+Tolima/IDV) são cobertas por `test_concordancia_entre_fontes`.
 
-## 5. Correções Aplicadas (Tarefa 7)
+## 5. Correções Aplicadas (Tarefas 6–7)
+
+> **Tarefa 7:** após inspeção dos 24 avisos de pênaltis e do `warnings.txt` (0 avisos de
+> parsing), concluiu-se que **não resta nenhum achado consertável via pipeline** — os
+> avisos A1 são upstream imutável e A2/A3 são conhecidos. Nenhuma alteração de código foi
+> feita nesta tarefa.
 
 1. **Bug de falso positivo em `_cat_consistencia`** — a checagem de cobertura de
    normalização comparava `nome_curto == mandante`, capturando times que mapeiam para
