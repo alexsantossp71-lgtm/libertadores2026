@@ -1217,6 +1217,50 @@ def _cat_consistencia(partidas: pd.DataFrame) -> dict:
                          ("visitante", "nome_curto_visitante")):
         for t in partidas[partidas[col_m].map(is_unmapped)][col_m].unique():
             avisos.append(f"time não mapeado em _CANONICAL: '{t}'")
+    # (b) consistência de pernas: ida+volta devem bater com o agregado
+    #     (apenas quando as colunas Ida/Volta/Agregado existirem no artefato)
+    _LEG_RE = re.compile(r"(\d+)\s*x\s*(\d+)")
+    _AGG_RE = re.compile(r"(\d+)\s*-\s*(\d+)")
+
+    def _parse_leg(s):
+        if not isinstance(s, str):
+            return None
+        m = _LEG_RE.search(s)
+        return (int(m.group(1)), int(m.group(2))) if m else None
+
+    def _parse_agg(s):
+        if not isinstance(s, str):
+            return None
+        m = _AGG_RE.search(s)
+        return (int(m.group(1)), int(m.group(2))) if m else None
+
+    pernas_file = RAW_OUT_DIR / "oitavas_resultados.csv"
+    if pernas_file.exists():
+        try:
+            pernas = pd.read_csv(pernas_file)
+            if not {"Ida", "Volta", "Agregado"} <= set(pernas.columns):
+                info.append(
+                    "sem colunas de agregado (Ida/Volta/Agregado) no artefato "
+                    "de pernas — checagem de consistência de ida+volta pulada"
+                )
+            else:
+                for _, r in pernas.iterrows():
+                    ida = _parse_leg(r.get("Ida"))
+                    volta = _parse_leg(r.get("Volta"))
+                    agr = _parse_agg(r.get("Agregado"))
+                    if ida is None or volta is None or agr is None:
+                        continue  # perna não disputada ou formato inesperado
+                    # Ida: Time1 em casa; Volta: Time2 em casa
+                    t1 = ida[0] + volta[1]
+                    t2 = ida[1] + volta[0]
+                    if (t1, t2) != agr:
+                        avisos.append(
+                            f"pernas não batem com agregado: {r.get('Time1')} x "
+                            f"{r.get('Time2')} ida+volta {t1}-{t2} vs agregado "
+                            f"{r.get('Agregado')}"
+                        )
+        except Exception as e:  # noqa: BLE001
+            avisos.append(f"não foi possível verificar consistência de pernas: {e}")
     # deriva dos artefatos 2026
     raw_map = {
         "grupos": RAW_OUT_DIR / "grupos_libertadores_2026.csv",
