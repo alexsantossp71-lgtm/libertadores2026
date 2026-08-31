@@ -22,7 +22,12 @@ class Preprocessor:
     
     def load_data(self) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
         """Carrega dados brutos."""
-        grupos = pd.read_csv(RAW_DIR / "grupos_libertadores_2026.csv")
+        # Prefer enriched version with R16/QF indicators
+        enriched_path = RAW_DIR / "grupos_libertadores_2026_enriched.csv"
+        if enriched_path.exists():
+            grupos = pd.read_csv(enriched_path)
+        else:
+            grupos = pd.read_csv(RAW_DIR / "grupos_libertadores_2026.csv")
         oitavas = pd.read_csv(RAW_DIR / "oitavas_resultados.csv")
         quartas = pd.read_csv(RAW_DIR / "confrontos_quartas.csv")
         return grupos, oitavas, quartas

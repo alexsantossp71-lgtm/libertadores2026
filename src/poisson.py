@@ -132,6 +132,65 @@ class PoissonScoreModel:
 
         return self
 
+    def fit_enhanced(self, grupos_df: pd.DataFrame, knockout_weight: float = 0.15) -> "PoissonScoreModel":
+        """Ajusta o modelo com ajuste baseado em desempenho no mata-mata.
+
+        Parameters
+        ----------
+        grupos_df : pd.DataFrame
+            Tabela agregada da fase de grupos com colunas opcionais
+            ``chegou_oitavas`` (0/1) e ``chegou_quartas`` (0/1).
+        knockout_weight : float
+            Peso do ajuste baseado no mata-mata (0 a 1). Default 0.15.
+
+        Returns
+        -------
+        PoissonScoreModel
+            A própria instância.
+        """
+        # Primeiro, ajuste base
+        self.fit(grupos_df)
+
+        # Ajuste baseado em desempenho no mata-mata
+        if "chegou_oitavas" in grupos_df.columns or "chegou_quartas" in grupos_df.columns:
+            df = grupos_df.copy()
+            df = df[df["J"] > 0]
+
+            # Fator de ajuste baseado no progresso no mata-mata
+            # Times que chegaram às oitavas: +5% ataque, -5% defesa
+            # Times que chegaram às quartas: +10% ataque, -10% defesa
+            # (adicional ao bônus de oitavas)
+            for _, row in df.iterrows():
+                team = row["Time"]
+                if team not in self.attack:
+                    continue
+
+                mult_attack = 1.0
+                mult_defense = 1.0
+
+                if row.get("chegou_oitavas", 0) == 1:
+                    mult_attack *= (1 + 0.05 * knockout_weight)
+                    mult_defense *= (1 - 0.05 * knockout_weight)
+
+                if row.get("chegou_quartas", 0) == 1:
+                    mult_attack *= (1 + 0.10 * knockout_weight)
+                    mult_defense *= (1 - 0.10 * knockout_weight)
+
+                self.attack[team] *= mult_attack
+                self.defense[team] *= mult_defense
+
+            # Recalcular médias da liga após ajustes
+            total_attack = sum(self.attack.values())
+            total_defense = sum(self.defense.values())
+            n_teams = len(self.teams)
+            self.league_avg = (total_attack + total_defense) / (2 * n_teams)
+
+            # Atualizar bases para idempotência
+            self._attack_base = dict(self.attack)
+            self._defense_base = dict(self.defense)
+
+        return self
+
     def apply_elenco_multipliers(
         self, multipliers: Dict[str, Tuple[float, float]]
     ) -> "PoissonScoreModel":

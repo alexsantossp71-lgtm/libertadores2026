@@ -102,7 +102,7 @@ def quimica_e_disciplina(elencos: pd.DataFrame) -> pd.DataFrame:
 
 def forma_recente(
     partidas: Optional[pd.DataFrame] = None,
-    temporada: int = 2026,
+    temporada: Optional[int] = 2026,
     n: int = 5,
 ) -> pd.DataFrame:
     """Últimos ``n`` jogos com placar de cada time (fonte: openfootball)."""
@@ -112,7 +112,7 @@ def forma_recente(
         partidas = pd.read_csv(HIST_PARTIDAS)
 
     df = partidas.copy()
-    if "temporada" in df.columns:
+    if "temporada" in df.columns and temporada is not None:
         df = df[df["temporada"] == temporada]
     df = df[df["gols_mandante"].notna() & df["gols_visitante"].notna()]
     if df.empty:
@@ -431,21 +431,21 @@ def persistir_analise(
 def run(persist: bool = True) -> Dict[str, pd.DataFrame]:
     """Gera a análise completa e grava CSVs."""
     print("=" * 60)
-    print("👕 ANÁLISE DE ELENCOS — FBref + forma recente")
+    print("ANALISE DE ELENCOS - FBref + forma recente")
     print("=" * 60)
     elencos = analisar_elencos()
     jogadores = analisar_jogadores()
     forma = forma_recente()
     influencia = tabela_influencia()
-    print(f"  • {len(elencos)} elencos com índices")
+    print(f"  * {len(elencos)} elencos com indices")
     if not jogadores.empty:
-        print(f"  • {len(jogadores)} times com recorte de jogadores")
+        print(f"  * {len(jogadores)} times com recorte de jogadores")
     if not forma.empty:
-        print(f"  • forma recente de {len(forma)} times")
+        print(f"  * forma recente de {len(forma)} times")
     if persist:
         paths = persistir_analise(elencos, jogadores, forma, influencia)
         for key, path in paths.items():
-            print(f"  💾 {key}: {path}")
+            print(f"  [SAVE] {key}: {path}")
     return {
         "elencos": elencos,
         "jogadores": jogadores,

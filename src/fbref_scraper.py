@@ -57,6 +57,7 @@ EXAMPLES_DIR = ROOT_DIR / "data" / "examples"
 JOGADORES_CSV = PROCESSED_DIR / "fbref_jogadores.csv"
 ELENCOS_CSV = PROCESSED_DIR / "fbref_elencos.csv"
 PARTIDAS_CSV = PROCESSED_DIR / "fbref_partidas.csv"
+ADVANCED_CSV = PROCESSED_DIR / "fbref_advanced.csv"
 SQLITE_PATH = PROCESSED_DIR / "fbref_libertadores.sqlite"
 
 COMP_ID = 14
@@ -219,7 +220,32 @@ STAT_MAP: Dict[str, str] = {
     "xg_for": "xg_mandante",
     "xg_against": "xg_visitante",
     "notes": "observacao",
+    # métricas avançadas (quando a FBref publica team stats para a comp)
+    # "xg": "xg" e "npxg": "xg_sem_penalti" já mapeados acima.
+    "xg_against_generic": "_skip_xga_dup",  # placeholder intencional (ver nota abaixo)
+    "ppda": "ppda",
+    "ppda_def": "ppda_def",
+    "final_third_pct": "field_tilt",
+    "counterpressures": "counterpressures",
+    "high_turnovers": "high_turnovers",
+    "final_third_passes": "final_third_passes",
+    "progressive_passes": "progressive_passes",
+    "touches_att_pen": "touches_att_pen",
 }
+
+# Métricas avançadas que queremos no CSV de saída (uma por time por partida).
+ADVANCED_NA_COLS: List[str] = [
+    "npxg",
+    "xa",
+    "ppda",
+    "ppda_def",
+    "field_tilt",
+    "counterpressures",
+    "high_turnovers",
+    "final_third_passes",
+    "progressive_passes",
+    "touches_att_pen",
+]
 
 # IDs de elenco FBref → nome canônico do dashboard (src/real_data.py).
 SQUAD_ID_CANONICO: Dict[str, str] = {
@@ -733,7 +759,7 @@ class FBrefClient:
                 self.last_call_ts = time.monotonic()
             except requests.RequestException as exc:
                 last_exc = exc
-                print(f"  ⚠️  FBref rede ({page}, tentativa {attempt}/{MAX_RETRIES}): {exc}")
+                print(f"  WARNING: FBref rede ({page}, tentativa {attempt}/{MAX_RETRIES}): {exc}")
                 # TLS/SSL fechado pelo provedor não se recupera com retry.
                 if isinstance(exc, requests.exceptions.SSLError) or "SSL" in str(exc):
                     raise FBrefUnavailableError(f"TLS/SSL ao falar com a FBref: {exc}") from exc
@@ -746,12 +772,12 @@ class FBrefClient:
                 return resp.text
             if resp.status_code == 429:
                 retry = int(resp.headers.get("Retry-After") or 60)
-                print(f"  ⚠️  FBref 429 — aguardando {retry}s…")
+                print(f"  WARNING: FBref 429 - aguardando {retry}s...")
                 time.sleep(retry)
                 last_exc = FBrefRateLimitError("429")
                 continue
             last_exc = FBrefError(f"HTTP {resp.status_code} em {url}")
-            print(f"  ⚠️  {last_exc}")
+            print(f"  WARNING: {last_exc}")
             time.sleep(2 * attempt)
 
         raise FBrefUnavailableError(
@@ -788,7 +814,7 @@ class FBrefClient:
         partidas_parts: List[pd.DataFrame] = []
 
         for page in pages:
-            print(f"  • FBref {page} ({season})…")
+            print(f"  - FBref {page} ({season})...")
             html = self.fetch_html(page, season, use_cache=use_cache, refresh=refresh)
             parsed = self.parse_page(html, page, season)
             if not parsed["jogadores"].empty:
@@ -845,6 +871,50 @@ class FBrefClient:
     def _permitir_exemplo() -> bool:
         return os.getenv("ALLOW_EXAMPLE_DATA", "").lower() in ("1", "true", "yes")
 
+    def _create_advanced_stats(self, data: Dict[str, pd.DataFrame]) -> pd.DataFrame:
+        """Gera métricas avançadas (uma linha por time por partida).
+
+        A FBref não publica passing/defense/xG avançados para comps/14, então
+        as colunas saem preenchidas com NaN — a menos que ``ALLOW_EXAMPLE_DATA=1``
+        e exista ``data/examples/fbref_advanced.csv``.
+        """
+        cols: List[str] = ["partida_id", "time"] + ADVANCED_NA_COLS
+        partidas = data.get("partidas", pd.DataFrame())
+        if partidas.empty:
+            return pd.DataFrame(columns=cols)
+
+        rows: List[Dict[str, Any]] = []
+        for idx, (_, match) in enumerate(partidas.iterrows()):
+            mandante = match.get("mandante")
+            visitante = match.get("visitante")
+            for time in (mandante, visitante):
+                row: Dict[str, Any] = {"partida_id": idx, "time": time}
+                for c in ADVANCED_NA_COLS:
+                    row[c] = float("nan")
+                rows.append(row)
+
+        df = pd.DataFrame(rows, columns=cols)
+
+        if self._permitir_exemplo():
+            example_path = EXAMPLES_DIR / "fbref_advanced.csv"
+            if example_path.exists():
+                try:
+                    example = pd.read_csv(example_path)
+                    for c in cols:
+                        if c not in example.columns:
+                            example[c] = float("nan")
+                    df = example[cols]
+                    print(
+                        "  INFO: ALLOW_EXAMPLE_DATA=1 - "
+                        "usando metricas avancadas de exemplo."
+                    )
+                except Exception as exc:  # pragma: no cover
+                    print(
+                        f"  WARNING: Falha ao ler exemplo avancado ({exc}); "
+                        "usando NaN."
+                    )
+        return df
+
     def run(
         self,
         season: int = 2026,
@@ -855,12 +925,12 @@ class FBrefClient:
     ) -> Dict[str, pd.DataFrame]:
         """Orquestra raspagem + fallback + gravação CSV/SQLite."""
         print("=" * 60)
-        print(f"📥 FBREF — elencos e jogadores da Libertadores {season}")
+        print(f"FBREF: elencos e jogadores da Libertadores {season}")
         print("=" * 60)
         print(
-            "  ℹ️  Páginas disponíveis: stats, shooting, playingtime, misc, keepers, schedule."
+            "  INFO: Paginas disponiveis: stats, shooting, playingtime, misc, keepers, schedule."
         )
-        print("  ℹ️  passing/defense/xG avançados NÃO são publicados para comps/14.")
+        print("  INFO: passing/defense/xG avancados NAO sao publicados para comps/14.")
 
         data: Optional[Dict[str, pd.DataFrame]] = None
         try:
@@ -870,26 +940,26 @@ class FBrefClient:
             if data["elencos"].empty and data["jogadores"].empty:
                 raise FBrefUnavailableError("HTML parseado sem tabelas úteis.")
             print(
-                f"  ✅ Raspagem: {len(data['elencos'])} elencos, "
+                f"  OK Raspagem: {len(data['elencos'])} elencos, "
                 f"{len(data['jogadores'])} jogadores, "
                 f"{len(data['partidas'])} partidas."
             )
         except (FBrefError, requests.RequestException, OSError) as exc:
-            print(f"  ⚠️  Raspagem ao vivo indisponível ({exc}).")
+            print(f"  WARNING: Raspagem ao vivo indisponivel ({exc}).")
             try:
                 data = self.load_snapshot(season)
                 print(
-                    f"  ✅ Snapshot histórico: {len(data['elencos'])} elencos, "
+                    f"  OK Snapshot historico: {len(data['elencos'])} elencos, "
                     f"{len(data['jogadores'])} jogadores."
                 )
             except FileNotFoundError as snap_exc:
                 if self._permitir_exemplo():
                     data = self._load_example()
-                    print("  ℹ️  ALLOW_EXAMPLE_DATA=1 — usando base de exemplo.")
+                    print("  INFO: ALLOW_EXAMPLE_DATA=1 - usando base de exemplo.")
                 else:
                     raise FBrefUnavailableError(
-                        "FBref inacessível e sem snapshot versionado. "
-                        "Rode a raspagem quando a rede estiver disponível "
+                        "FBref inacessivel e sem snapshot versionado. "
+                        "Rode a raspagem quando a rede estiver disponivel "
                         "ou use o snapshot em data/historical/fbref/."
                     ) from snap_exc
 
@@ -897,8 +967,15 @@ class FBrefClient:
         if persist:
             paths = save_csvs(data["elencos"], data["jogadores"], data["partidas"])
             db = save_sqlite(data["elencos"], data["jogadores"], data["partidas"])
-            print(f"  💾 CSV: {paths['elencos']}")
-            print(f"  💾 SQLite: {db}")
+            print(f"  [OK] CSV: {paths['elencos']}")
+            print(f"  [OK] SQLite: {db}")
+            advanced = self._create_advanced_stats(data)
+            ADVANCED_CSV.parent.mkdir(parents=True, exist_ok=True)
+            advanced.to_csv(ADVANCED_CSV, index=False)
+            print(
+                f"  [OK] CSV avancado: {ADVANCED_CSV} "
+                f"({len(advanced)} linhas, {len(advanced.columns)} colunas)"
+            )
         return data
 
 
@@ -928,7 +1005,7 @@ def load_jogadores(path: Optional[Path] = None) -> pd.DataFrame:
 # CLI
 # --------------------------------------------------------------------------- #
 def main(argv: Optional[Sequence[str]] = None) -> int:
-    parser = argparse.ArgumentParser(description="Raspagem FBref — Libertadores")
+    parser = argparse.ArgumentParser(description="Raspagem FBref - Libertadores")
     sub = parser.add_subparsers(dest="command")
 
     scrape_p = sub.add_parser("scrape", help="Baixa e persiste as tabelas")
@@ -936,7 +1013,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     scrape_p.add_argument(
         "--pages",
         default=",".join(DEFAULT_PAGES),
-        help="Lista separada por vírgula (stats,shooting,misc,…)",
+        help="Lista separada por virgula (stats,shooting,misc,...)",
     )
     scrape_p.add_argument("--from-cache", action="store_true")
     scrape_p.add_argument("--refresh", action="store_true")
