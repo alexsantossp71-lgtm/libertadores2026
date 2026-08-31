@@ -1295,6 +1295,7 @@ def _cat_entre_fontes(partidas: pd.DataFrame) -> dict:
         info.append("sem arquivos openfootball de 2026 para comparar")
         return {"erros": erros, "avisos": avisos, "info": info}
     base = pd.concat(base_frames, ignore_index=True)
+    comparadas = 0
     for _, r in partidas[
         (partidas["temporada"] == 2026) & partidas["gols_mandante"].notna()
     ].iterrows():
@@ -1304,6 +1305,7 @@ def _cat_entre_fontes(partidas: pd.DataFrame) -> dict:
         if bm.empty or pd.isna(bm.iloc[0]["gols_mandante"]):
             continue
         b = bm.iloc[0]
+        comparadas += 1
         if (int(b["gols_mandante"]) != int(r["gols_mandante"])
                 or int(b["gols_visitante"]) != int(r["gols_visitante"])):
             avisos.append(
@@ -1311,6 +1313,17 @@ def _cat_entre_fontes(partidas: pd.DataFrame) -> dict:
                 f"{int(b['gols_mandante'])}-{int(b['gols_visitante'])} vs "
                 f"suplemento {int(r['gols_mandante'])}-{int(r['gols_visitante'])} (fonte={r['fonte']})"
             )
+    if comparadas == 0:
+        fontes = partidas[
+            (partidas["temporada"] == 2026) & partidas["gols_mandante"].notna()
+        ]["fonte"].unique().tolist()
+        info.append(
+            "nenhuma partida 2026 presente em mais de uma fonte com placar "
+            "(openfootball tem as partidas sem placar; cada placar veio de "
+            f"uma única fonte {sorted(fontes)}) — nada a concordar"
+        )
+    else:
+        info.append(f"{comparadas} partidas 2026 comparadas entre openfootball e suplementos")
     return {"erros": erros, "avisos": avisos, "info": info}
 
 
