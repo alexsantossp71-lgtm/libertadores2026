@@ -1,0 +1,142 @@
+partida_id,data,fase,rodada,grupo,mandante,visitante,gols_mandante,gols_visitante,resultado,arbitro,arbitro_pais,faltas_mandante,faltas_visitante,cartoes_amarelos_mandante,cartoes_amarelos_visitante,cartoes_vermelhos_mandante,cartoes_vermelhos_visitante,posse_mandante,posse_visitante,passes_certos_mandante,passes_certos_visitante,passes_errados_mandante,passes_errados_visitante,finalizacoes_mandante,finalizacoes_visitante,finalizacoes_no_gol_mandante,finalizacoes_no_gol_visitante,finalizacoes_fora_mandante,finalizacoes_fora_visitante,escanteios_mandante,escanteios_visitante,impedimentos_mandante,impedimentos_visitante,defesas_mandante,defesas_visitante,fonte
+1001,2026-02-03,Preliminar,,,The Strongest,Deportivo Táchira,2,1,mandante,Paulo Zanovelli,,12.0,11.0,1,4,0,0,78.0,22.0,,,,,27,10,8,4,19,6,8.0,2.0,1.0,1.0,3.0,6.0,fbref
+1002,2026-02-04,Preliminar,,,2 de Mayo,Alianza Lima,1,0,mandante,José Javier Burgos,,11.0,9.0,1,2,0,0,42.0,58.0,,,,,13,11,2,2,11,9,3.0,3.0,1.0,3.0,2.0,1.0,fbref
+1003,2026-02-05,Preliminar,,,Juventud (URU),Universidad Católica,0,1,visitante,Gery Vargas,,9.0,9.0,1,3,0,0,55.0,45.0,,,,,17,4,7,2,10,2,9.0,3.0,2.0,0.0,0.0,7.0,fbref
+1004,2026-02-10,Preliminar,,,Deportivo Táchira,The Strongest,1,0,mandante,Derlis López,,11.0,14.0,3,5,0,1,68.0,32.0,,,,,18,6,9,1,9,5,9.0,3.0,1.0,1.0,0.0,8.0,fbref
+1005,2026-02-11,Preliminar,,,Alianza Lima,2 de Mayo,1,1,empate,Flavio Rodrigues de Souza,,17.0,11.0,3,4,0,0,59.0,41.0,,,,,22,18,6,5,16,13,5.0,3.0,2.0,1.0,4.0,4.0,fbref
+1006,2026-02-12,Preliminar,,,Universidad Católica,Juventud (URU),3,4,visitante,Yael Falcón,,13.0,14.0,4,2,0,0,64.0,36.0,,,,,14,11,8,5,6,6,2.0,4.0,1.0,0.0,1.0,5.0,fbref
+1007,2026-02-17,Preliminar,,,2 de Mayo,Sporting Cristal,2,2,empate,Carlos Betancourt,,11.0,7.0,3,3,0,1,50.0,50.0,,,,,11,7,1,2,10,5,4.0,4.0,1.0,2.0,1.0,0.0,fbref
+1008,2026-02-17,Preliminar,,,Carabobo,Huachipato,1,0,mandante,Andrés Rojas,,11.0,5.0,6,3,1,0,49.0,51.0,,,,,11,11,3,2,8,9,4.0,5.0,0.0,3.0,2.0,2.0,fbref
+1009,2026-02-17,Preliminar,,,Liverpool (URU),Independiente Medellín,1,2,visitante,Bruno Arleu,,11.0,16.0,2,2,0,0,54.0,46.0,,,,,11,20,3,5,8,15,4.0,5.0,3.0,4.0,3.0,2.0,fbref
+1010,2026-02-18,Preliminar,,,Barcelona SC,Argentinos Juniors,0,1,visitante,Fernando Véjar,,7.0,10.0,3,2,0,1,40.0,60.0,,,,,14,9,3,1,11,8,3.0,2.0,2.0,2.0,0.0,3.0,fbref
+1011,2026-02-18,Preliminar,,,Nacional Potosí,Botafogo,1,0,mandante,Augusto Aragón,,5.0,9.0,0,3,0,0,65.0,35.0,,,,,25,8,2,2,23,6,5.0,0.0,9.0,2.0,2.0,1.0,fbref
+1012,2026-02-18,Preliminar,,,O'Higgins,Bahia,1,0,mandante,Alberto Feres,,18.0,8.0,3,6,0,0,35.0,65.0,,,,,10,9,3,1,7,8,2.0,6.0,2.0,1.0,1.0,2.0,fbref
+1013,2026-02-19,Preliminar,,,Juventud (URU),Guaraní,0,0,empate,Rafael Klein,,7.0,16.0,0,2,0,0,56.0,44.0,,,,,17,10,4,6,13,4,2.0,3.0,1.0,2.0,6.0,4.0,fbref
+1014,2026-02-19,Preliminar,,,Deportivo Táchira,Tolima,0,1,visitante,Hernan Heras,,6.0,11.0,4,2,0,0,36.0,64.0,,,,,10,8,3,5,7,3,4.0,2.0,2.0,1.0,4.0,2.0,fbref
+1015,2026-02-24,Preliminar,,,Huachipato,Carabobo,1,2,visitante,Rodrigo José Pereira de Lima,,13.0,11.0,4,2,0,0,65.0,35.0,,,,,23,15,10,4,13,11,8.0,3.0,1.0,1.0,2.0,9.0,fbref
+1016,2026-02-24,Preliminar,,,Independiente Medellín,Liverpool (URU),0,0,empate,Anderson Daronco,,15.0,9.0,3,3,0,0,42.0,58.0,,,,,11,12,3,4,8,8,3.0,4.0,0.0,4.0,4.0,3.0,fbref
+1017,2026-02-24,Preliminar,,,Sporting Cristal,2 de Mayo,0,0,empate,Andrés Matonte,,12.0,10.0,2,2,0,0,69.0,31.0,,,,,18,11,3,0,15,11,5.0,2.0,3.0,3.0,0.0,3.0,fbref
+1018,2026-02-25,Preliminar,,,Argentinos Juniors,Barcelona SC,0,1,visitante,Esteban Ostojich,,14.0,17.0,2,6,0,0,70.0,31.0,,,,,10,6,7,3,3,3,3.0,1.0,5.0,0.0,2.0,7.0,fbref
+1019,2026-02-25,Preliminar,,,Botafogo,Nacional Potosí,2,0,mandante,Piero Maza,,17.0,10.0,2,4,0,0,60.0,40.0,,,,,16,7,6,3,10,4,4.0,1.0,1.0,2.0,3.0,4.0,fbref
+1020,2026-02-25,Preliminar,,,Bahia,O'Higgins,2,1,mandante,Nicolás Ramírez,,10.0,15.0,4,6,0,0,70.0,30.0,,,,,12,6,3,1,9,5,4.0,2.0,5.0,4.0,0.0,0.0,fbref
+1021,2026-02-26,Preliminar,,,Guaraní,Juventud (URU),1,2,visitante,Cristián Garay,,17.0,10.0,3,3,1,1,46.0,54.0,,,,,18,14,7,4,11,10,3.0,3.0,0.0,1.0,2.0,6.0,fbref
+1022,2026-02-26,Preliminar,,,Tolima,Deportivo Táchira,0,1,visitante,Leandro Rey,,12.0,6.0,2,0,0,0,59.0,41.0,,,,,10,5,3,1,7,4,3.0,3.0,1.0,2.0,0.0,3.0,fbref
+1023,2026-03-03,Preliminar,,,Barcelona SC,Botafogo,1,1,empate,Wilmar Roldán,,12.0,8.0,2,1,0,0,36.0,64.0,,,,,12,11,3,3,9,8,4.0,6.0,5.0,0.0,2.0,2.0,fbref
+1024,2026-03-04,Preliminar,,,Carabobo,Sporting Cristal,0,1,visitante,Ramon Abatti,,13.0,16.0,0,4,0,0,57.0,43.0,,,,,15,8,6,2,9,6,9.0,3.0,7.0,1.0,1.0,5.0,fbref
+1025,2026-03-04,Preliminar,,,O'Higgins,Tolima,1,0,mandante,Andrés Matonte,,7.0,5.0,2,2,1,1,66.0,34.0,,,,,15,8,3,3,12,5,7.0,4.0,1.0,1.0,3.0,2.0,fbref
+1026,2026-03-05,Preliminar,,,Juventud (URU),Independiente Medellín,1,1,empate,Augusto Menéndez,,18.0,20.0,2,2,0,0,57.0,43.0,,,,,10,7,2,4,8,3,5.0,6.0,1.0,3.0,3.0,2.0,fbref
+1027,2026-03-10,Preliminar,,,Botafogo,Barcelona SC,0,1,visitante,Piero Maza,,5.0,9.0,1,5,0,0,81.0,20.0,,,,,21,8,5,2,16,6,6.0,2.0,,,1.0,5.0,fbref
+1028,2026-03-11,Preliminar,,,Tolima,O'Higgins,2,0,mandante,Anderson Daronco,,15.0,11.0,4,2,0,0,60.0,40.0,,,,,12,11,8,2,4,9,4.0,5.0,2.0,4.0,2.0,6.0,fbref
+1029,2026-03-11,Preliminar,,,Sporting Cristal,Carabobo,1,2,visitante,Gustavo Tejera,,13.0,13.0,3,3,0,0,66.0,34.0,,,,,17,14,6,3,11,11,6.0,4.0,3.0,2.0,1.0,5.0,fbref
+1030,2026-03-12,Preliminar,,,Independiente Medellín,Juventud (URU),2,1,mandante,Juan Gabriel Benítez,,23.0,12.0,1,0,0,1,51.0,49.0,,,,,12,12,5,4,7,8,5.0,3.0,2.0,0.0,3.0,3.0,fbref
+1031,2026-04-07,Fase de Grupos,1ª Rodada,Grupo A,Independiente Rivadavia,Bolívar,1,0,mandante,José Cabero,,9.0,7.0,1,0,0,1,37.0,63.0,,,,,12,8,4,3,8,5,5.0,1.0,5.0,0.0,3.0,4.0,fbref
+1032,2026-04-07,Fase de Grupos,1ª Rodada,Grupo B,Universidad Católica,Boca Juniors,1,2,visitante,Gustavo Tejera,,13.0,12.0,4,2,0,0,45.0,55.0,,,,,10,7,3,4,7,3,6.0,2.0,0.0,2.0,1.0,2.0,fbref
+1033,2026-04-07,Fase de Grupos,1ª Rodada,Grupo B,Barcelona SC,Cruzeiro,0,1,visitante,Juan Gabriel Benítez,,16.0,12.0,1,2,0,0,55.0,45.0,,,,,18,5,2,3,16,2,5.0,0.0,4.0,2.0,2.0,2.0,fbref
+1034,2026-04-07,Fase de Grupos,1ª Rodada,Grupo A,Deportivo La Guaira,Fluminense,0,0,empate,José Javier Burgos,,10.0,9.0,4,0,0,0,36.0,64.0,,,,,6,18,1,7,5,11,3.0,8.0,5.0,0.0,7.0,1.0,fbref
+1035,2026-04-07,Fase de Grupos,1ª Rodada,Grupo C,Always Ready,LDU,0,1,visitante,Carlos Ortega,,13.0,9.0,3,4,0,0,62.0,38.0,,,,,21,15,5,2,16,13,8.0,4.0,4.0,1.0,1.0,5.0,fbref
+1036,2026-04-07,Fase de Grupos,1ª Rodada,Grupo D,Tolima,Universitario,0,0,empate,Wilton Sampaio,,13.0,13.0,0,0,0,0,66.0,34.0,,,,,9,11,4,3,5,8,5.0,5.0,2.0,0.0,3.0,4.0,fbref
+1037,2026-04-08,Fase de Grupos,1ª Rodada,Grupo F,Junior,Palmeiras,1,1,empate,Facundo Tello,,17.0,9.0,3,1,0,0,43.0,57.0,,,,,9,22,3,5,6,17,2.0,11.0,1.0,5.0,4.0,2.0,fbref
+1038,2026-04-08,Fase de Grupos,1ª Rodada,Grupo F,Sporting Cristal,Cerro Porteño,1,0,mandante,Darío Herrera,,9.0,11.0,3,0,0,1,61.0,39.0,,,,,16,3,4,1,12,2,6.0,0.0,2.0,4.0,1.0,3.0,fbref
+1039,2026-04-08,Fase de Grupos,1ª Rodada,Grupo E,Cusco FC,Flamengo,0,2,visitante,Derlis López,,12.0,7.0,2,0,0,0,51.0,50.0,,,,,8,19,2,10,6,9,5.0,7.0,5.0,2.0,7.0,2.0,fbref
+1040,2026-04-08,Fase de Grupos,1ª Rodada,Grupo D,Coquimbo Unido,Nacional (URU),1,1,empate,Raphael Claus,,13.0,8.0,2,2,0,0,68.0,32.0,,,,,16,7,8,2,8,5,11.0,7.0,6.0,1.0,0.0,6.0,fbref
+1041,2026-04-08,Fase de Grupos,1ª Rodada,Grupo C,Mirassol,Lanús,1,0,mandante,Jhon Ospina,,16.0,7.0,3,1,0,1,45.0,55.0,,,,,13,6,3,2,10,4,5.0,8.0,1.0,0.0,2.0,2.0,fbref
+1042,2026-04-08,Fase de Grupos,1ª Rodada,Grupo E,Independiente Medellín,Estudiantes,1,1,empate,Alexis Herrera,,13.0,16.0,2,5,0,0,64.0,36.0,,,,,12,10,5,4,7,6,7.0,1.0,0.0,1.0,3.0,4.0,fbref
+1043,2026-04-09,Fase de Grupos,1ª Rodada,Grupo G,Universidad Central (VEN),Libertad,3,1,mandante,Flavio Rodrigues de Souza,,7.0,7.0,4,2,0,0,41.0,59.0,,,,,14,15,6,4,8,11,1.0,4.0,1.0,0.0,3.0,3.0,fbref
+1044,2026-04-09,Fase de Grupos,1ª Rodada,Grupo H,Santa Fe,Peñarol,1,1,empate,Jesús Valenzuela,,17.0,5.0,4,1,0,0,55.0,45.0,,,,,15,16,2,6,13,10,4.0,4.0,0.0,2.0,5.0,0.0,fbref
+1045,2026-04-09,Fase de Grupos,1ª Rodada,Grupo H,Platense,Corinthians,0,2,visitante,Piero Maza,,8.0,8.0,0,1,1,0,57.0,44.0,,,,,6,6,2,3,4,3,5.0,1.0,1.0,1.0,1.0,2.0,fbref
+1046,2026-04-09,Fase de Grupos,1ª Rodada,Grupo G,Rosario Central,Independiente del Valle,0,0,empate,Wilmar Roldán,,5.0,7.0,2,2,0,1,58.0,42.0,,,,,26,10,9,2,17,8,9.0,3.0,2.0,1.0,2.0,9.0,fbref
+1047,2026-04-14,Fase de Grupos,2ª Rodada,Grupo B,Boca Juniors,Barcelona SC,3,0,mandante,Wilmar Roldán,,9.0,14.0,1,2,0,0,63.0,37.0,,,,,19,6,11,1,8,5,5.0,4.0,3.0,1.0,1.0,8.0,fbref
+1048,2026-04-14,Fase de Grupos,2ª Rodada,Grupo A,Bolívar,Deportivo La Guaira,1,1,empate,Anthony Yamil Díaz,,10.0,12.0,1,0,0,1,72.0,28.0,,,,,25,4,6,2,19,2,15.0,2.0,4.0,1.0,1.0,5.0,fbref
+1049,2026-04-14,Fase de Grupos,2ª Rodada,Grupo F,Cerro Porteño,Junior,1,0,mandante,Esteban Ostojich,,14.0,13.0,4,1,0,0,45.0,55.0,,,,,11,9,4,3,7,6,5.0,2.0,1.0,3.0,3.0,3.0,fbref
+1050,2026-04-14,Fase de Grupos,2ª Rodada,Grupo E,Estudiantes,Cusco FC,2,1,mandante,José Cabero,,9.0,8.0,2,3,0,1,56.0,44.0,,,,,25,5,9,2,16,3,4.0,0.0,1.0,3.0,1.0,7.0,fbref
+1051,2026-04-14,Fase de Grupos,2ª Rodada,Grupo D,Nacional (URU),Tolima,3,1,mandante,Yael Falcón,,11.0,18.0,3,5,0,0,42.0,59.0,,,,,13,7,7,3,6,4,6.0,2.0,0.0,2.0,2.0,4.0,fbref
+1052,2026-04-14,Fase de Grupos,2ª Rodada,Grupo C,LDU,Mirassol,2,0,mandante,Bruno Pérez,,16.0,5.0,1,3,0,1,39.0,61.0,,,,,18,5,5,2,13,3,4.0,2.0,2.0,0.0,2.0,3.0,fbref
+1053,2026-04-14,Fase de Grupos,2ª Rodada,Grupo D,Universitario,Coquimbo Unido,0,2,visitante,Ramon Abatti,,20.0,18.0,2,1,0,0,68.0,32.0,,,,,8,5,4,2,4,3,7.0,2.0,3.0,0.0,0.0,4.0,fbref
+1054,2026-04-15,Fase de Grupos,2ª Rodada,Grupo G,Independiente del Valle,Universidad Central (VEN),3,1,mandante,Jordy Espinoza,,5.0,5.0,0,3,1,0,67.0,33.0,,,,,33,14,13,3,20,11,10.0,2.0,,,1.0,8.0,fbref
+1055,2026-04-15,Fase de Grupos,2ª Rodada,Grupo A,Fluminense,Independiente Rivadavia,1,2,visitante,Jhon Ospina,,10.0,12.0,1,4,0,0,71.0,29.0,,,,,21,7,9,4,12,3,1.0,1.0,,,2.0,8.0,fbref
+1056,2026-04-15,Fase de Grupos,2ª Rodada,Grupo H,Corinthians,Santa Fe,2,0,mandante,Juan Gabriel Benítez,,5.0,20.0,1,0,0,0,66.0,35.0,,,,,14,6,9,1,5,5,8.0,5.0,1.0,0.0,1.0,7.0,fbref
+1057,2026-04-15,Fase de Grupos,2ª Rodada,Grupo G,Libertad,Rosario Central,0,1,visitante,Raphael Claus,,16.0,9.0,2,3,0,0,33.0,67.0,,,,,8,14,2,7,6,7,4.0,5.0,1.0,1.0,4.0,2.0,fbref
+1058,2026-04-15,Fase de Grupos,2ª Rodada,Grupo B,Cruzeiro,Universidad Católica,1,2,visitante,Carlos Betancourt,,12.0,15.0,5,4,0,0,63.0,37.0,,,,,16,9,6,4,10,5,4.0,4.0,0.0,2.0,2.0,5.0,fbref
+1059,2026-04-16,Fase de Grupos,2ª Rodada,Grupo E,Flamengo,Independiente Medellín,4,1,mandante,Andrés Matonte,,6.0,15.0,1,3,0,0,59.0,41.0,,,,,24,8,10,1,14,7,4.0,2.0,3.0,1.0,0.0,6.0,fbref
+1060,2026-04-16,Fase de Grupos,2ª Rodada,Grupo H,Peñarol,Platense,1,2,visitante,Derlis López,,16.0,24.0,5,5,1,0,52.0,48.0,,,,,9,5,5,3,4,2,1.0,0.0,4.0,2.0,1.0,4.0,fbref
+1061,2026-04-16,Fase de Grupos,2ª Rodada,Grupo C,Lanús,Always Ready,1,0,mandante,Alexis Herrera,,10.0,12.0,1,4,0,1,65.0,35.0,,,,,26,5,7,1,19,4,11.0,1.0,,,1.0,6.0,fbref
+1062,2026-04-16,Fase de Grupos,2ª Rodada,Grupo F,Palmeiras,Sporting Cristal,2,1,mandante,Piero Maza,,4.0,9.0,0,3,0,0,65.0,35.0,,,,,23,8,6,2,17,6,8.0,3.0,3.0,2.0,1.0,4.0,fbref
+1063,2026-04-28,Fase de Grupos,3ª Rodada,Grupo C,Lanús,LDU,1,0,mandante,José Cabero,,9.0,16.0,3,3,0,0,55.0,45.0,,,,,11,8,5,1,6,7,6.0,4.0,1.0,0.0,1.0,4.0,fbref
+1064,2026-04-28,Fase de Grupos,3ª Rodada,Grupo D,Tolima,Coquimbo Unido,3,0,mandante,Anderson Daronco,,10.0,16.0,1,3,0,0,68.0,32.0,,,,,14,9,5,5,9,4,1.0,4.0,0.0,2.0,5.0,1.0,fbref
+1065,2026-04-28,Fase de Grupos,3ª Rodada,Grupo F,Sporting Cristal,Junior,2,0,mandante,Nicolás Ramírez,,8.0,7.0,2,1,0,1,56.0,44.0,,,,,17,13,4,2,13,11,7.0,4.0,4.0,3.0,2.0,2.0,fbref
+1066,2026-04-28,Fase de Grupos,3ª Rodada,Grupo G,Libertad,Independiente del Valle,2,3,visitante,Carlos Betancourt,,9.0,9.0,3,2,0,0,43.0,57.0,,,,,8,14,4,6,4,8,0.0,6.0,6.0,2.0,3.0,2.0,fbref
+1067,2026-04-28,Fase de Grupos,3ª Rodada,Grupo G,Universidad Central (VEN),Rosario Central,0,3,visitante,José Javier Burgos,,9.0,11.0,3,3,0,0,42.0,58.0,,,,,13,11,3,4,10,7,3.0,6.0,1.0,3.0,1.0,3.0,fbref
+1068,2026-04-28,Fase de Grupos,3ª Rodada,Grupo B,Cruzeiro,Boca Juniors,1,0,mandante,Esteban Ostojich,,11.0,14.0,4,5,0,1,63.0,37.0,,,,,11,0,2,0,9,0,5.0,1.0,,,0.0,1.0,fbref
+1069,2026-04-29,Fase de Grupos,3ª Rodada,Grupo H,Platense,Santa Fe,2,1,mandante,Alexis Herrera,,13.0,16.0,2,3,0,0,49.0,51.0,,,,,13,8,7,1,6,7,3.0,1.0,2.0,0.0,0.0,5.0,fbref
+1070,2026-04-29,Fase de Grupos,3ª Rodada,Grupo E,Estudiantes,Flamengo,1,1,empate,Piero Maza,,15.0,5.0,5,1,0,0,52.0,48.0,,,,,14,8,6,5,8,3,8.0,2.0,1.0,1.0,4.0,5.0,fbref
+1071,2026-04-29,Fase de Grupos,3ª Rodada,Grupo D,Universitario,Nacional (URU),4,2,mandante,Carlos Benítez,,16.0,8.0,4,4,0,1,56.0,44.0,,,,,15,11,9,6,6,5,7.0,5.0,2.0,0.0,4.0,5.0,fbref
+1072,2026-04-29,Fase de Grupos,3ª Rodada,Grupo C,Mirassol,Always Ready,2,0,mandante,Carlos Ortega,,14.0,5.0,4,3,1,0,47.0,54.0,,,,,14,12,4,4,10,8,7.0,6.0,1.0,3.0,4.0,2.0,fbref
+1073,2026-04-29,Fase de Grupos,3ª Rodada,Grupo B,Barcelona SC,Universidad Católica,1,2,visitante,Bruno Pérez,,7.0,12.0,3,1,0,0,64.0,36.0,,,,,13,9,6,6,7,3,3.0,3.0,2.0,1.0,4.0,5.0,fbref
+1074,2026-04-29,Fase de Grupos,3ª Rodada,Grupo F,Cerro Porteño,Palmeiras,1,1,empate,Gustavo Tejera,,17.0,11.0,1,1,0,0,34.0,66.0,,,,,8,16,3,6,5,10,3.0,5.0,1.0,1.0,5.0,3.0,fbref
+1075,2026-04-30,Fase de Grupos,3ª Rodada,Grupo A,Independiente Rivadavia,Deportivo La Guaira,4,1,mandante,Augusto Menéndez,,11.0,15.0,1,0,0,0,53.0,48.0,,,,,13,5,5,2,8,3,4.0,2.0,1.0,0.0,1.0,1.0,fbref
+1076,2026-04-30,Fase de Grupos,3ª Rodada,Grupo E,Independiente Medellín,Cusco FC,1,0,mandante,Gery Vargas,,10.0,4.0,3,2,0,0,63.0,37.0,,,,,21,10,6,1,15,9,6.0,1.0,0.0,1.0,1.0,5.0,fbref
+1077,2026-04-30,Fase de Grupos,3ª Rodada,Grupo A,Bolívar,Fluminense,2,0,mandante,Derlis López,,15.0,8.0,2,3,0,1,50.0,51.0,,,,,14,6,7,0,7,6,2.0,1.0,4.0,1.0,0.0,5.0,fbref
+1078,2026-04-30,Fase de Grupos,3ª Rodada,Grupo H,Corinthians,Peñarol,2,0,mandante,Cristián Garay,,7.0,13.0,0,2,0,0,78.0,22.0,,,,,15,9,4,2,11,7,5.0,4.0,,,2.0,2.0,fbref
+1079,2026-05-05,Fase de Grupos,4ª Rodada,Grupo C,Always Ready,Lanús,4,0,mandante,Bruno Pérez,,16.0,6.0,2,1,0,0,63.0,37.0,,,,,24,7,10,4,14,3,2.0,5.0,1.0,1.0,4.0,5.0,fbref
+1080,2026-05-05,Fase de Grupos,4ª Rodada,Grupo B,Barcelona SC,Boca Juniors,1,0,mandante,Carlos Betancourt,,14.0,12.0,5,4,1,1,46.0,54.0,,,,,11,10,5,4,6,6,2.0,4.0,3.0,6.0,4.0,3.0,fbref
+1081,2026-05-05,Fase de Grupos,4ª Rodada,Grupo F,Sporting Cristal,Palmeiras,0,2,visitante,Darío Herrera,,16.0,12.0,2,2,0,0,42.0,58.0,,,,,18,22,6,5,12,17,8.0,7.0,4.0,2.0,3.0,5.0,fbref
+1082,2026-05-05,Fase de Grupos,4ª Rodada,Grupo G,Universidad Central (VEN),Independiente del Valle,2,0,mandante,Gery Vargas,,3.0,7.0,1,2,0,0,32.0,68.0,,,,,8,28,4,7,4,21,1.0,10.0,2.0,1.0,7.0,2.0,fbref
+1083,2026-05-05,Fase de Grupos,4ª Rodada,Grupo G,Rosario Central,Libertad,1,0,mandante,Wilton Sampaio,,13.0,18.0,2,4,0,0,51.0,49.0,,,,,17,12,7,3,10,9,5.0,6.0,3.0,0.0,3.0,5.0,fbref
+1084,2026-05-06,Fase de Grupos,4ª Rodada,Grupo A,Independiente Rivadavia,Fluminense,1,1,empate,Gustavo Tejera,,13.0,14.0,2,4,0,0,27.0,73.0,,,,,15,11,3,2,12,9,6.0,2.0,3.0,0.0,1.0,2.0,fbref
+1085,2026-05-06,Fase de Grupos,4ª Rodada,Grupo D,Tolima,Nacional (URU),3,0,mandante,Raphael Claus,,3.0,5.0,3,2,0,0,62.0,38.0,,,,,19,8,9,2,10,6,10.0,3.0,1.0,1.0,2.0,5.0,fbref
+1086,2026-05-06,Fase de Grupos,4ª Rodada,Grupo B,Universidad Católica,Cruzeiro,0,0,empate,Andrés Rojas,,16.0,7.0,2,2,0,1,53.0,48.0,,,,,13,11,5,1,8,10,5.0,2.0,0.0,2.0,1.0,5.0,fbref
+1087,2026-05-06,Fase de Grupos,4ª Rodada,Grupo A,Deportivo La Guaira,Bolívar,1,1,empate,Bryan Loayza,,16.0,8.0,4,3,0,0,48.0,53.0,,,,,12,12,6,4,6,8,6.0,7.0,1.0,3.0,3.0,5.0,fbref
+1088,2026-05-06,Fase de Grupos,4ª Rodada,Grupo H,Santa Fe,Corinthians,1,1,empate,Kevin Ortega,,17.0,4.0,4,0,0,0,41.0,59.0,,,,,15,12,7,3,8,9,4.0,6.0,3.0,1.0,2.0,6.0,fbref
+1089,2026-05-06,Fase de Grupos,4ª Rodada,Grupo E,Cusco FC,Estudiantes,1,1,empate,Guillermo Guerrero,,8.0,5.0,1,3,0,0,61.0,39.0,,,,,14,10,8,2,6,8,3.0,3.0,6.0,0.0,1.0,7.0,fbref
+1090,2026-05-07,Fase de Grupos,4ª Rodada,Grupo F,Junior,Cerro Porteño,0,1,visitante,Piero Maza,,13.0,10.0,2,2,0,0,65.0,35.0,,,,,16,12,2,3,14,9,10.0,2.0,3.0,2.0,2.0,2.0,fbref
+1091,2026-05-07,Fase de Grupos,4ª Rodada,Grupo D,Coquimbo Unido,Universitario,2,1,mandante,Nicolás Ramírez,,13.0,9.0,1,3,0,0,53.0,48.0,,,,,10,9,4,2,6,7,9.0,3.0,3.0,1.0,1.0,1.0,fbref
+1092,2026-05-07,Fase de Grupos,4ª Rodada,Grupo H,Platense,Peñarol,1,1,empate,Juan Gabriel Benítez,,14.0,16.0,2,6,0,0,58.0,42.0,,,,,13,8,3,4,10,4,4.0,3.0,4.0,1.0,3.0,2.0,fbref
+1093,2026-05-07,Fase de Grupos,4ª Rodada,Grupo C,Mirassol,LDU,2,0,mandante,Alexis Herrera,,6.0,12.0,0,3,0,0,52.0,48.0,,,,,15,6,8,2,7,4,7.0,0.0,1.0,1.0,2.0,6.0,fbref
+1094,2026-05-19,Fase de Grupos,5ª Rodada,Grupo G,Rosario Central,Universidad Central (VEN),4,0,mandante,Flavio Rodrigues de Souza,,16.0,9.0,2,3,0,0,64.0,36.0,,,,,16,8,6,1,10,7,4.0,0.0,2.0,2.0,1.0,2.0,fbref
+1095,2026-05-19,Fase de Grupos,5ª Rodada,Grupo H,Santa Fe,Platense,2,1,mandante,Cristián Garay,,13.0,10.0,5,3,0,0,54.0,46.0,,,,,12,5,4,2,8,3,5.0,3.0,2.0,2.0,1.0,2.0,fbref
+1096,2026-05-19,Fase de Grupos,5ª Rodada,Grupo B,Boca Juniors,Cruzeiro,1,1,empate,Jesús Valenzuela,,14.0,15.0,2,2,0,1,54.0,46.0,,,,,28,7,10,3,18,4,12.0,1.0,2.0,0.0,2.0,9.0,fbref
+1097,2026-05-19,Fase de Grupos,5ª Rodada,Grupo C,Always Ready,Mirassol,1,2,visitante,José Javier Burgos,,18.0,9.0,4,4,0,1,51.0,49.0,,,,,13,9,2,4,11,5,3.0,3.0,2.0,3.0,2.0,1.0,fbref
+1098,2026-05-19,Fase de Grupos,5ª Rodada,Grupo D,Coquimbo Unido,Tolima,3,0,mandante,Wilton Sampaio,,14.0,8.0,3,1,0,0,33.0,67.0,,,,,14,8,10,2,4,6,3.0,9.0,3.0,1.0,2.0,7.0,fbref
+1099,2026-05-19,Fase de Grupos,5ª Rodada,Grupo A,Fluminense,Bolívar,2,1,mandante,Andrés Matonte,,14.0,9.0,5,2,0,0,74.0,26.0,,,,,24,5,8,2,16,3,5.0,1.0,3.0,0.0,1.0,6.0,fbref
+1100,2026-05-19,Fase de Grupos,5ª Rodada,Grupo G,Independiente del Valle,Libertad,4,1,mandante,Anderson Daronco,,4.0,9.0,0,1,0,0,63.0,37.0,,,,,21,6,8,4,13,2,8.0,4.0,1.0,0.0,3.0,4.0,fbref
+1101,2026-05-20,Fase de Grupos,5ª Rodada,Grupo F,Palmeiras,Cerro Porteño,0,1,visitante,Yael Falcón,,17.0,10.0,3,3,0,0,74.0,26.0,,,,,11,7,5,2,6,5,6.0,3.0,3.0,0.0,1.0,5.0,fbref
+1102,2026-05-20,Fase de Grupos,5ª Rodada,Grupo E,Cusco FC,Independiente Medellín,2,3,visitante,Fernando Véjar,,9.0,10.0,1,3,0,0,62.0,38.0,,,,,12,11,6,5,6,6,9.0,3.0,0.0,3.0,2.0,4.0,fbref
+1103,2026-05-20,Fase de Grupos,5ª Rodada,Grupo C,LDU,Lanús,2,0,mandante,Andrés Rojas,,16.0,7.0,3,3,0,0,60.0,40.0,,,,,17,5,3,0,14,5,5.0,1.0,3.0,3.0,0.0,2.0,fbref
+1104,2026-05-20,Fase de Grupos,5ª Rodada,Grupo D,Nacional (URU),Universitario,0,0,empate,Darío Herrera,,6.0,4.0,0,1,0,0,48.0,52.0,,,,,12,10,4,3,8,7,7.0,5.0,,,3.0,4.0,fbref
+1105,2026-05-20,Fase de Grupos,5ª Rodada,Grupo F,Junior,Sporting Cristal,3,2,mandante,Leandro Rey,,13.0,10.0,2,1,0,0,51.0,50.0,,,,,16,19,7,5,9,14,4.0,6.0,3.0,3.0,3.0,4.0,fbref
+1106,2026-05-20,Fase de Grupos,5ª Rodada,Grupo E,Flamengo,Estudiantes,1,0,mandante,Esteban Ostojich,,9.0,13.0,2,5,0,0,67.0,33.0,,,,,13,8,4,1,9,7,3.0,5.0,2.0,1.0,1.0,3.0,fbref
+1107,2026-05-21,Fase de Grupos,5ª Rodada,Grupo B,Universidad Católica,Barcelona SC,2,0,mandante,Juan Gabriel Benítez,,6.0,7.0,0,3,0,1,76.0,24.0,,,,,31,4,9,0,22,4,9.0,1.0,3.0,0.0,0.0,7.0,fbref
+1108,2026-05-21,Fase de Grupos,5ª Rodada,Grupo A,Deportivo La Guaira,Independiente Rivadavia,2,4,visitante,Mario Díaz,,9.0,15.0,3,2,0,0,55.0,45.0,,,,,15,15,5,7,10,8,7.0,3.0,0.0,1.0,3.0,3.0,fbref
+1109,2026-05-21,Fase de Grupos,5ª Rodada,Grupo H,Peñarol,Corinthians,1,1,empate,Piero Maza,,5.0,6.0,0,0,0,0,35.0,65.0,,,,,16,21,3,8,13,13,3.0,5.0,2.0,2.0,6.0,2.0,fbref
+1110,2026-05-26,Fase de Grupos,6ª Rodada,Grupo C,Lanús,Mirassol,1,0,mandante,Carlos Benítez,,13.0,11.0,2,1,0,0,48.0,52.0,,,,,22,6,5,1,17,5,10.0,1.0,1.0,0.0,1.0,4.0,fbref
+1111,2026-05-26,Fase de Grupos,6ª Rodada,Grupo D,Nacional (URU),Coquimbo Unido,1,0,mandante,Nicolás Ramírez,,11.0,16.0,1,4,1,0,33.0,67.0,,,,,8,8,3,3,5,5,2.0,8.0,0.0,1.0,3.0,2.0,fbref
+1112,2026-05-26,Fase de Grupos,6ª Rodada,Grupo D,Universitario,Tolima,0,0,empate,Paulo Zanovelli,,13.0,19.0,0,2,0,0,49.0,52.0,,,,,11,7,2,3,9,4,9.0,3.0,2.0,3.0,3.0,2.0,fbref
+1113,2026-05-26,Fase de Grupos,6ª Rodada,Grupo E,Flamengo,Cusco FC,3,0,mandante,José Javier Burgos,,11.0,12.0,0,5,0,0,68.0,32.0,,,,,27,4,15,1,12,3,9.0,2.0,1.0,2.0,1.0,10.0,fbref
+1114,2026-05-26,Fase de Grupos,6ª Rodada,Grupo E,Estudiantes,Independiente Medellín,1,0,mandante,Juan Gabriel Benítez,,11.0,12.0,2,2,0,0,72.0,28.0,,,,,21,6,8,1,13,5,9.0,5.0,,,1.0,7.0,fbref
+1115,2026-05-26,Fase de Grupos,6ª Rodada,Grupo C,LDU,Always Ready,3,2,mandante,Fernando Véjar,,6.0,6.0,2,1,0,0,53.0,47.0,,,,,21,23,7,11,14,12,4.0,11.0,6.0,2.0,9.0,3.0,fbref
+1116,2026-05-27,Fase de Grupos,6ª Rodada,Grupo G,Independiente del Valle,Rosario Central,1,0,mandante,Raphael Claus,,8.0,9.0,1,4,0,0,56.0,44.0,,,,,25,6,8,4,17,2,9.0,2.0,2.0,0.0,4.0,7.0,fbref
+1117,2026-05-27,Fase de Grupos,6ª Rodada,Grupo A,Fluminense,Deportivo La Guaira,3,1,mandante,José Cabero,,11.0,9.0,0,0,0,0,56.0,44.0,,,,,7,10,3,3,4,7,2.0,1.0,6.0,0.0,2.0,0.0,fbref
+1118,2026-05-27,Fase de Grupos,6ª Rodada,Grupo A,Bolívar,Independiente Rivadavia,1,3,visitante,Guillermo Guerrero,,7.0,11.0,2,4,0,0,66.0,34.0,,,,,16,13,6,7,10,6,8.0,2.0,1.0,1.0,4.0,6.0,fbref
+1119,2026-05-27,Fase de Grupos,6ª Rodada,Grupo G,Libertad,Universidad Central (VEN),0,1,visitante,Rafael Klein,,8.0,13.0,0,3,0,0,55.0,45.0,,,,,13,8,3,4,10,4,6.0,2.0,3.0,0.0,3.0,3.0,fbref
+1120,2026-05-27,Fase de Grupos,6ª Rodada,Grupo H,Corinthians,Platense,0,2,visitante,Alexis Herrera,,5.0,14.0,2,2,0,0,77.0,23.0,,,,,14,10,5,5,9,5,5.0,4.0,1.0,0.0,3.0,5.0,fbref
+1121,2026-05-27,Fase de Grupos,6ª Rodada,Grupo H,Peñarol,Santa Fe,0,1,visitante,Kevin Ortega,,9.0,21.0,2,2,0,0,63.0,38.0,,,,,22,5,4,3,18,2,9.0,2.0,1.0,1.0,1.0,4.0,fbref
+1122,2026-05-28,Fase de Grupos,6ª Rodada,Grupo F,Palmeiras,Junior,4,1,mandante,Cristián Garay,,4.0,12.0,0,3,0,0,49.0,51.0,,,,,17,17,8,1,9,16,0.0,7.0,0.0,1.0,0.0,4.0,fbref
+1123,2026-05-28,Fase de Grupos,6ª Rodada,Grupo B,Boca Juniors,Universidad Católica,0,1,visitante,Wilmar Roldán,,6.0,16.0,2,2,0,0,71.0,29.0,,,,,22,2,2,1,20,1,9.0,2.0,2.0,0.0,0.0,2.0,fbref
+1124,2026-05-28,Fase de Grupos,6ª Rodada,Grupo B,Cruzeiro,Barcelona SC,4,0,mandante,Andrés Matonte,,9.0,9.0,3,3,0,0,59.0,41.0,,,,,21,10,8,2,13,8,6.0,2.0,2.0,1.0,2.0,4.0,fbref
+1125,2026-05-28,Fase de Grupos,6ª Rodada,Grupo F,Cerro Porteño,Sporting Cristal,2,0,mandante,Piero Maza,,12.0,15.0,3,3,0,0,51.0,49.0,,,,,11,8,4,3,7,5,6.0,1.0,4.0,1.0,3.0,2.0,fbref
+1126,2026-08-11,Oitavas de Final,,,Estudiantes,Universidad Católica,1,1,empate,Raphael Claus,,15.0,12.0,2,2,0,0,52.0,48.0,,,,,17,4,5,1,12,3,11.0,1.0,3.0,1.0,0.0,4.0,fbref
+1127,2026-08-11,Oitavas de Final,,,Fluminense,Independiente Rivadavia,0,0,empate,Cristián Garay,,5.0,14.0,2,1,0,0,74.0,26.0,,,,,16,11,3,3,13,8,7.0,6.0,0.0,1.0,3.0,3.0,fbref
+1128,2026-08-12,Oitavas de Final,,,Palmeiras,Cerro Porteño,1,1,empate,Gustavo Tejera,,10.0,16.0,0,5,1,0,61.0,39.0,,,,,21,8,7,1,14,7,7.0,2.0,6.0,1.0,1.0,5.0,fbref
+1129,2026-08-12,Oitavas de Final,,,Platense,Coquimbo Unido,1,1,empate,Juan Gabriel Benítez,,6.0,11.0,1,2,0,0,52.0,48.0,,,,,16,11,8,1,8,10,7.0,10.0,0.0,5.0,0.0,6.0,fbref
+1130,2026-08-12,Oitavas de Final,,,Cruzeiro,Flamengo,1,1,empate,Yael Falcón,,11.0,14.0,2,1,0,0,47.0,53.0,,,,,11,15,1,5,10,10,2.0,4.0,0.0,3.0,4.0,0.0,fbref
+1131,2026-08-13,Oitavas de Final,,,Mirassol,LDU,1,1,empate,Alexis Herrera,,8.0,17.0,2,1,0,0,50.0,50.0,,,,,13,14,3,4,10,10,7.0,5.0,4.0,1.0,2.0,2.0,fbref
+1132,2026-08-13,Oitavas de Final,,,Rosario Central,Corinthians,0,0,empate,Andrés Matonte,,16.0,11.0,3,4,0,1,57.0,43.0,,,,,16,5,2,1,14,4,12.0,0.0,1.0,1.0,1.0,2.0,fbref
+1133,2026-08-18,Oitavas de Final,,,Universidad Católica,Estudiantes,0,3,visitante,Wilmar Roldán,,16.0,7.0,2,3,0,0,48.0,52.0,,,,,11,11,1,7,10,4,5.0,1.0,1.0,2.0,4.0,1.0,fbref
+1134,2026-08-18,Oitavas de Final,,,Independiente Rivadavia,Fluminense,1,1,empate,Andrés Rojas,,18.0,11.0,3,6,0,1,48.0,52.0,,,,,13,10,3,4,10,6,7.0,4.0,1.0,1.0,3.0,2.0,fbref
+1135,2026-08-18,Oitavas de Final,,,Tolima,Independiente del Valle,0,1,visitante,Wilton Sampaio,,18.0,6.0,2,2,0,0,68.0,32.0,,,,,18,10,5,2,13,8,5.0,3.0,1.0,1.0,1.0,5.0,fbref
+1136,2026-08-19,Oitavas de Final,,,Cerro Porteño,Palmeiras,0,1,visitante,Facundo Tello,,17.0,17.0,2,1,0,0,57.0,43.0,,,,,10,13,3,3,7,10,7.0,6.0,0.0,1.0,1.0,3.0,fbref
+1137,2026-08-19,Oitavas de Final,,,Flamengo,Cruzeiro,2,1,mandante,Gustavo Tejera,,9.0,13.0,1,2,0,0,52.0,48.0,,,,,24,14,9,3,15,11,3.0,6.0,,,2.0,7.0,fbref
+1138,2026-08-19,Oitavas de Final,,,Coquimbo Unido,Platense,0,0,empate,Bruno Pérez,,14.0,11.0,3,2,0,0,40.0,60.0,,,,,10,15,3,2,7,13,1.0,7.0,6.0,2.0,2.0,3.0,fbref
+1139,2026-08-20,Oitavas de Final,,,LDU,Mirassol,0,0,empate,Yael Falcón,,13.0,9.0,1,3,0,0,63.0,37.0,,,,,11,16,2,3,9,13,7.0,5.0,0.0,1.0,3.0,2.0,fbref
+1140,2026-08-20,Oitavas de Final,,,Corinthians,Rosario Central,1,0,mandante,Alexis Herrera,,15.0,14.0,1,0,1,0,44.0,56.0,,,,,8,10,3,1,5,9,3.0,8.0,4.0,0.0,1.0,2.0,fbref
+1141,2026-08-25,Oitavas de Final,,,Independiente del Valle,Tolima,3,1,mandante,Darío Herrera,,3.0,11.0,1,3,0,0,46.0,54.0,,,,,20,11,7,3,13,8,3.0,2.0,0.0,2.0,1.0,4.0,fbref
