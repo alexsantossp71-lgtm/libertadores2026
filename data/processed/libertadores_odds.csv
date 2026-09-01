@@ -1,0 +1,5 @@
+partida_id,data,fase,rodada,mandante,visitante,odd_mandante,odd_empate,odd_visitante,prob_mandante_impl,prob_empate_impl,prob_visitante_impl,margem,bookmaker,gols_mandante,gols_visitante,resultado,fonte
+5001,2026-09-08,Quartas de Final,Ida,Fluminense,Platense,1.43,3.77,7.51,0.6371,0.2416,0.1213,0.0977,The Odds API (média 29 casas),,,,the-odds-api
+5002,2026-09-09,Quartas de Final,Ida,Palmeiras,LDU,1.23,4.97,11.92,0.7404,0.1832,0.0764,0.0981,The Odds API (média 33 casas),,,,the-odds-api
+5003,2026-09-10,Quartas de Final,Ida,Estudiantes,Corinthians,2.16,2.86,3.5,0.4215,0.3183,0.2601,0.0983,The Odds API (média 31 casas),,,,the-odds-api
+5004,2026-09-11,Quartas de Final,Ida,Independiente del Valle,Flamengo,2.5,2.8,2.61,0.3508,0.3132,0.336,0.1403,The Odds API (média 32 casas),,,,the-odds-api

@@ -23,6 +23,7 @@ from src.model import LibertadoresModel
 from src.predict import LibertadoresPredictor
 from src.api_futebol_client import ApiFutebolClient
 from src.odds_client import BzzoiroOddsClient
+from src.oddsapi_client import OddsApiClient
 from src.fbref_scraper import FBrefClient
 
 
@@ -36,6 +37,7 @@ class LibertadoresPipeline:
         self.predictor = LibertadoresPredictor()
         self.futebol_client = ApiFutebolClient()
         self.odds_client = BzzoiroOddsClient()
+        self.oddsapi_client = OddsApiClient()
         self.fbref_client = FBrefClient()
 
     def run(
@@ -87,10 +89,15 @@ class LibertadoresPipeline:
             print("[3/7] ⏭️  Pulando coleta de estatísticas...\n")
             stats_df = self.preprocessor.load_estatisticas()
 
-        # Etapa 4: Odds (Bzzoiro)
+        # Etapa 4: Odds (The Odds API primeiro; fallback Bzzoiro)
         if not skip_odds:
-            print("[4/7] 🎰 Coletando odds 1X2 (Bzzoiro Sports Data)...")
-            odds_df = self.odds_client.run(partidas=self.preprocessor.load_estatisticas())
+            print("[4/7] 🎰 Coletando odds 1X2 (The Odds API → Bzzoiro Sports Data)...")
+            odds_df = self.oddsapi_client.run()
+            if odds_df.empty:
+                print("   ℹ️  The Odds API sem linhas — tentando Bzzoiro Sports Data...")
+                odds_df = self.odds_client.run(
+                    partidas=self.preprocessor.load_estatisticas()
+                )
             print()
         else:
             print("[4/7] ⏭️  Pulando coleta de odds...\n")
