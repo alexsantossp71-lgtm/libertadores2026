@@ -31,8 +31,9 @@ import plotly.express as px
 import plotly.graph_objects as go
 import streamlit as st
 
-from src.dashboard_utils import fit_model, flag, load_grupos_features
+from src.dashboard_utils import fit_model, flag, load_estatisticas, load_grupos_features
 from src.poisson import PoissonScoreModel
+from src.referee_prediction import arbitros_mais_provaveis
 from src.preprocessing import Preprocessor
 from src.scraper import LibertadoresScraper
 
@@ -149,6 +150,35 @@ def prob_bar(p_home: float, p_draw: float, p_away: float, home: str, away: str) 
         plot_bgcolor="rgba(0,0,0,0)",
     )
     return fig
+
+
+@st.cache_data
+def _arbitros_cache(
+    _stats: pd.DataFrame, mandante: str, visitante: str, fase: str
+) -> List[Tuple[str, str, float]]:
+    """Top-2 árbitros prováveis (cacheado por times/fase + df de estatísticas)."""
+    return arbitros_mais_provaveis(_stats, mandante, visitante, fase=fase, top_n=2)
+
+
+def bloco_arbitros(a: str, b: str, fase: str) -> None:
+    """Linha compacta com os 2 árbitros mais prováveis do confronto.
+
+    Oculta-se silenciosamente se as estatísticas detalhadas não existirem
+    (FileNotFoundError) ou não houver dados de árbitros.
+    """
+    try:
+        stats = load_estatisticas()
+    except FileNotFoundError:
+        return
+    top = _arbitros_cache(stats, a, b, fase)
+    if not top:
+        return
+    partes = []
+    for i, (nome, pais, prob) in enumerate(top):
+        bandeira = flag(pais) if pais else "🏳️"
+        item = f"{bandeira} {nome} ({prob:.0%})"
+        partes.append(f"**{i + 1}º {item}**" if i == 0 else f"{i + 1}º {item}")
+    st.markdown("🟩 Arbitragem provável: " + " · ".join(partes))
 
 
 def two_way_bar(p_a: float, p_b: float, name_a: str, name_b: str) -> go.Figure:
@@ -596,6 +626,12 @@ with tab_mata:
                 "Agregado provável",
                 f"{t['agg_mais_provavel'][0]} × {t['agg_mais_provavel'][1]}",
             )
+            fase_arb = (
+                "Quartas de Final" if str(t["label"]).startswith("QF")
+                else "Semifinal" if str(t["label"]).startswith("SF")
+                else str(t["label"])
+            )
+            bloco_arbitros(t["a"], t["b"], fase_arb)
             if not compact:
                 with st.expander("Detalhes das pernas"):
                     la, lb = t["lambda_ida"]
@@ -683,6 +719,7 @@ with tab_mata:
         k1, k2 = st.columns(2)
         k1.metric("Campeão provável", final["favorito"], f"{max(cup['p_win_a'], cup['p_win_b']):.0%}")
         k2.metric("Placar provável (90 min)", f"{cup['placar_mais_provavel'][0]} × {cup['placar_mais_provavel'][1]}")
+        bloco_arbitros(final["a"], final["b"], "Final")
 
     # ------------------------------------------------------------------ #
     # Campeão + caminho
