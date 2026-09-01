@@ -887,8 +887,8 @@ class FBrefClient:
         for idx, (_, match) in enumerate(partidas.iterrows()):
             mandante = match.get("mandante")
             visitante = match.get("visitante")
-            for time in (mandante, visitante):
-                row: Dict[str, Any] = {"partida_id": idx, "time": time}
+            for equipe in (mandante, visitante):
+                row: Dict[str, Any] = {"partida_id": idx, "time": equipe}
                 for c in ADVANCED_NA_COLS:
                     row[c] = float("nan")
                 rows.append(row)
