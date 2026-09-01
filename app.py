@@ -457,9 +457,10 @@ try:
             m4.metric("🎯 Acertos do modelo", "—")
 except FileNotFoundError:
     st.info(
-        "As análises de arbitragem e odds exigem chaves de API reais "
-        "(API_FUTEBOL_KEY / BSD_API — ver `.env.example`). "
-        "Sem chaves, nenhuma base simulada é usada."
+        "A análise de arbitragem usa dados reais do FBref "
+        "(`python src/fbref_partidas.py build`). "
+        "As odds de mercado exigem a chave BSD_API "
+        "(ver `.env.example`); sem ela, nenhuma base simulada é usada."
     )
 except Exception as exc:  # análises opcionais: não quebram o dashboard
     with st.expander("⚠️ Análises opcionais indisponíveis (detalhes)"):
