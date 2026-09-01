@@ -85,32 +85,40 @@ ev_combinada = pre.evaluate_probabilities(combinada, COLS_COMB)
 # --------------------------------------------------------------------------- #
 st.subheader("🎯 Acurácia: modelo × mercado × combinação")
 
-m1, m2, m3, m4 = st.columns(4)
-m1.metric(
-    "Acurácia — modelo",
-    f"{ev_modelo['acuracia']:.1%}",
-    help="Fração de jogos em que a classe mais provável do modelo acertou.",
-)
-m2.metric(
-    "Acurácia — odds",
-    f"{ev_mercado['acuracia']:.1%}",
-    delta=f"{ev_mercado['acuracia'] - ev_modelo['acuracia']:+.1%} vs modelo",
-    help="Fração de jogos em que a classe mais provável das odds acertou.",
-)
-m3.metric(
-    "Acurácia — combinada",
-    f"{ev_combinada['acuracia']:.1%}",
-    delta=f"{ev_combinada['acuracia'] - ev_mercado['acuracia']:+.1%} vs odds",
-    help="Combinação inteligente modelo + odds (limiar definido na barra lateral).",
-)
-m4.metric(
-    "Brier Score — combinada",
-    f"{ev_combinada['brier_score']:.3f}",
-    delta=f"{ev_combinada['brier_score'] - ev_mercado['brier_score']:+.3f} vs odds",
-    delta_color="inverse",
-    help="Menor é melhor. Modelo: %.3f · Odds: %.3f."
-    % (ev_modelo["brier_score"], ev_mercado["brier_score"]),
-)
+if ev_modelo["n"] == 0:
+    st.info(
+        "Ainda não há partidas **finalizadas** com odds reais para avaliar — "
+        "as odds atuais cobrem apenas jogos futuros (o plano gratuito não expõe "
+        "odds históricas). As métricas de acurácia e Brier Score aparecem "
+        "automaticamente assim que os jogos com odds terminarem."
+    )
+else:
+    m1, m2, m3, m4 = st.columns(4)
+    m1.metric(
+        "Acurácia — modelo",
+        f"{ev_modelo['acuracia']:.1%}",
+        help="Fração de jogos em que a classe mais provável do modelo acertou.",
+    )
+    m2.metric(
+        "Acurácia — odds",
+        f"{ev_mercado['acuracia']:.1%}",
+        delta=f"{ev_mercado['acuracia'] - ev_modelo['acuracia']:+.1%} vs modelo",
+        help="Fração de jogos em que a classe mais provável das odds acertou.",
+    )
+    m3.metric(
+        "Acurácia — combinada",
+        f"{ev_combinada['acuracia']:.1%}",
+        delta=f"{ev_combinada['acuracia'] - ev_mercado['acuracia']:+.1%} vs odds",
+        help="Combinação inteligente modelo + odds (limiar definido na barra lateral).",
+    )
+    m4.metric(
+        "Brier Score — combinada",
+        f"{ev_combinada['brier_score']:.3f}",
+        delta=f"{ev_combinada['brier_score'] - ev_mercado['brier_score']:+.3f} vs odds",
+        delta_color="inverse",
+        help="Menor é melhor. Modelo: %.3f · Odds: %.3f."
+        % (ev_modelo["brier_score"], ev_mercado["brier_score"]),
+    )
 
 st.caption(
     f"Jogos avaliados: {ev_modelo['n']} · O mercado divergiu do modelo em "
@@ -136,30 +144,39 @@ divergiram = div_max[div_max["divergencia_max"] > threshold].copy()
 if divergiram.empty:
     st.info("Nenhuma divergência acima do limiar selecionado.")
 else:
-    acertos_modelo = (
-        (divergiram[list(COLS_MODELO)].to_numpy().argmax(axis=1)
-         == divergiram["resultado"].map({"mandante": 0, "empate": 1, "visitante": 2}).to_numpy()).mean()
-    )
-    acertos_mercado = (
-        (divergiram[list(COLS_MERCADO)].to_numpy().argmax(axis=1)
-         == divergiram["resultado"].map({"mandante": 0, "empate": 1, "visitante": 2}).to_numpy()).mean()
-    )
+    div_avaliaveis = divergiram.dropna(subset=["resultado"])
     d1, d2, d3 = st.columns(3)
     d1.metric("Divergências", len(divergiram))
-    d2.metric("Acertos do mercado nesses jogos", f"{acertos_mercado:.0%}")
-    d3.metric("Acertos do modelo nesses jogos", f"{acertos_modelo:.0%}")
-
-    if acertos_mercado > acertos_modelo:
-        st.success(
-            "Nas divergências fortes, o mercado acertou mais — evidência de "
-            "informação extra (lesões, escalações) embutida nas odds. É por "
-            "isso que a combinação usa o mercado nesses casos."
+    if div_avaliaveis.empty:
+        d2.metric("Acertos do mercado nesses jogos", "—")
+        d3.metric("Acertos do modelo nesses jogos", "—")
+        st.info(
+            "Oficial: as divergências atuais são em jogos futuros — os "
+            "acertos (quem estava certo) só podem ser medidos após o apito final."
         )
     else:
-        st.info(
-            "Nas divergências fortes, o modelo acertou mais — as odds podem "
-            "estar refletindo overreaction do público (viés de favorito)."
+        acertos_modelo = (
+            (div_avaliaveis[list(COLS_MODELO)].to_numpy().argmax(axis=1)
+             == div_avaliaveis["resultado"].map({"mandante": 0, "empate": 1, "visitante": 2}).to_numpy()).mean()
         )
+        acertos_mercado = (
+            (div_avaliaveis[list(COLS_MERCADO)].to_numpy().argmax(axis=1)
+             == div_avaliaveis["resultado"].map({"mandante": 0, "empate": 1, "visitante": 2}).to_numpy()).mean()
+        )
+        d2.metric("Acertos do mercado nesses jogos", f"{acertos_mercado:.0%}")
+        d3.metric("Acertos do modelo nesses jogos", f"{acertos_modelo:.0%}")
+
+        if acertos_mercado > acertos_modelo:
+            st.success(
+                "Nas divergências fortes, o mercado acertou mais — evidência de "
+                "informação extra (lesões, escalações) embutida nas odds. É por "
+                "isso que a combinação usa o mercado nesses casos."
+            )
+        else:
+            st.info(
+                "Nas divergências fortes, o modelo acertou mais — as odds podem "
+                "estar refletindo overreaction do público (viés de favorito)."
+            )
 
 # --------------------------------------------------------------------------- #
 # Comparação lado a lado (top divergências)
